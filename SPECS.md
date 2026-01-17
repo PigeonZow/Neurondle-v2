@@ -1089,7 +1089,9 @@ CREATE POLICY "Users can view own sessions"
 - [x] Pan/zoom/pinch navigation
 - [x] Spatial indexing for efficient hover detection
 - [x] Tooltip on hover showing feature index, description, sparsity
-- [x] Search bar to filter/highlight points by description
+- [x] Feature search with two modes:
+  - **Highlight mode**: Fuzzy search to highlight matching features on the map
+  - **Jump-to mode**: Fuzzy search dropdown to navigate directly to a specific feature
 - [x] Points colored by sparsity (blue to red gradient)
 - [x] Automatic centering and zoom on load
 - [x] View reset when advancing to next round
@@ -1123,6 +1125,13 @@ CREATE POLICY "Users can view own sessions"
 - Using `new PIXI.Graphics().fill({ color, alpha })` syntax
 - Using individual sprites in Container (not ParticleContainer) for interactivity
 - Spatial indexing via custom class for hover/click detection
+
+**Feature Search (Fuse.js):**
+
+- Two search modes: "Highlight" (filters points on map) and "Jump to" (dropdown to navigate)
+- Fuse.js index built on mount with `threshold: 0.4` for fuzzy matching
+- Jump-to animates viewport to center on selected feature at 1.5x zoom
+- Search integrated into collapsible section in GameControls
 
 **UMAP Point Rendering:**
 

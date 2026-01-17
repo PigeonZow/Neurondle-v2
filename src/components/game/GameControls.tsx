@@ -6,9 +6,18 @@ import { useGameStore, selectCurrentRound, selectRevealedHints } from '@/lib/sto
 import { TestInput } from './TestInput'
 import { HintPanel } from './HintPanel'
 import { ScoreReveal } from './ScoreReveal'
+import { FeatureSearch } from './FeatureSearch'
+import type { UmapPoint } from '@/types'
 
-export function GameControls() {
+interface GameControlsProps {
+  umapData: UmapPoint[]
+  onFilterChange: (query: string) => void
+  onJumpToPoint: (point: UmapPoint) => void
+}
+
+export function GameControls({ umapData, onFilterChange, onJumpToPoint }: GameControlsProps) {
   const [expanded, setExpanded] = useState(true)
+  const [showSearch, setShowSearch] = useState(false)
 
   const currentRound = useGameStore(selectCurrentRound)
   const revealedHints = useGameStore(selectRevealedHints)
@@ -44,14 +53,45 @@ export function GameControls() {
             animate={{ y: 0, opacity: 1 }}
             className="bg-game-surface/90 backdrop-blur-sm rounded-xl p-4 space-y-4"
           >
-            {/* Hint panel */}
+            {/* Expandable content */}
             {expanded && (
-              <HintPanel
-                hints={revealedHints}
-                totalHints={totalHints}
-                onRevealHint={revealHint}
-                hintsRevealed={hintsRevealed}
-              />
+              <div className="space-y-4">
+                {/* Feature Search - collapsible */}
+                <div>
+                  <button
+                    onClick={() => setShowSearch(!showSearch)}
+                    className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors mb-2"
+                  >
+                    <svg
+                      className={`w-4 h-4 transition-transform ${showSearch ? 'rotate-90' : ''}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    Search Map
+                  </button>
+                  {showSearch && (
+                    <FeatureSearch
+                      data={umapData}
+                      onFilterChange={onFilterChange}
+                      onJumpToPoint={onJumpToPoint}
+                    />
+                  )}
+                </div>
+
+                {/* Hint panel */}
+                <HintPanel
+                  hints={revealedHints}
+                  totalHints={totalHints}
+                  onRevealHint={revealHint}
+                  hintsRevealed={hintsRevealed}
+                />
+              </div>
             )}
 
             {/* Test input */}

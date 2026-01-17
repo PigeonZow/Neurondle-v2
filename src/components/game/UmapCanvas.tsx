@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useState, useCallback, forwardRef, useImperativeHandle } from 'react'
 import { useGameStore } from '@/lib/store/gameStore'
 import type { UmapPoint } from '@/types'
 
@@ -10,6 +10,10 @@ interface UmapCanvasProps {
   answerPoint?: { x: number; y: number } | null
   showAnswer?: boolean
   roundKey?: number
+}
+
+export interface UmapCanvasRef {
+  centerOnPoint: (point: { x: number; y: number }) => void
 }
 
 interface TooltipState {
@@ -45,13 +49,13 @@ class SpatialIndex {
   }
 }
 
-export function UmapCanvas({
+export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function UmapCanvas({
   data,
   searchQuery = '',
   answerPoint,
   showAnswer = false,
   roundKey = 0,
-}: UmapCanvasProps) {
+}, ref) {
   const containerRef = useRef<HTMLDivElement>(null)
   const pixiRef = useRef<{
     destroy: () => void
@@ -66,6 +70,7 @@ export function UmapCanvas({
     clearPinAndLine: () => void
     resetView: () => void
     zoomToFit: (pin: { x: number; y: number }, answer: { x: number; y: number }) => void
+    centerOnPoint: (point: { x: number; y: number }) => void
   } | null>(null)
 
   const [tooltip, setTooltip] = useState<TooltipState>({
@@ -74,6 +79,13 @@ export function UmapCanvas({
     y: 0,
     point: null,
   })
+
+  // Expose centerOnPoint to parent via ref
+  useImperativeHandle(ref, () => ({
+    centerOnPoint: (point: { x: number; y: number }) => {
+      pixiRef.current?.centerOnPoint(point)
+    },
+  }), [])
 
   const setPin = useGameStore(state => state.setPin)
   const currentPin = useGameStore(state => {
@@ -540,6 +552,18 @@ export function UmapCanvas({
             ease: 'easeInOutSine',
           })
         },
+        centerOnPoint: (point) => {
+          const sx = point.x * scale + offsetX
+          const sy = point.y * scale + offsetY
+
+          // Animate to center on the point with a reasonable zoom
+          viewport.animate({
+            position: { x: sx, y: sy },
+            scale: 1.5,  // Zoom in a bit to show the area
+            time: 400,
+            ease: 'easeInOutSine',
+          })
+        },
       }
 
       // Add window mouse move listener for tooltip
@@ -585,7 +609,7 @@ export function UmapCanvas({
       )}
     </>
   )
-}
+})
 
 // Helper to interpolate between two colors
 function interpolateColor(color1: number, color2: number, t: number): number {

@@ -65,7 +65,7 @@ export function TestInput() {
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleTest()}
-          placeholder="Enter text to test activation..."
+          placeholder="Enter text to test custom activation..."
           className="flex-1 bg-game-bg border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500"
         />
         <button
