@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --game-bg: #1a1a2e;
+  --game-surface: #16213e;
+  --game-accent: #0f3460;
+  --game-highlight: #e94560;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  background-color: var(--game-bg);
+  color: white;
+}
+
+/* Ensure full-screen canvas */
+#game-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+}
+
+/* Floating UI overlay */
+.game-overlay {
+  position: fixed;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.game-overlay > * {
+  pointer-events: auto;
+}
+
+/* Token highlighting */
+.token {
+  display: inline;
+  padding: 0 1px;
+  border-radius: 2px;
+  transition: background-color 0.2s ease;
+}
+
+.token-highlight {
+  background-color: rgba(59, 130, 246, var(--activation-opacity, 0.3));
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--game-surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--game-accent);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--game-highlight);
+}
