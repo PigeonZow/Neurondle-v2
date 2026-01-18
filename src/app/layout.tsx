@@ -5,8 +5,8 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Neurondle - GeoGuessr for Neurons',
-  description: 'Guess where neurons are located on a 2D UMAP map based on what text activates them',
+  title: 'Neurondle',
+  description: 'Guess where neurons are located based on what text activates them',
   keywords: ['AI', 'interpretability', 'neurons', 'game', 'UMAP', 'SAE'],
 }
 

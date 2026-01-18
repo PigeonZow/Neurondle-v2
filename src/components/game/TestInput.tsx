@@ -65,14 +65,14 @@ export function TestInput() {
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleTest()}
-          placeholder="Enter text to test custom activation..."
-          className="flex-1 bg-game-bg border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500"
+          placeholder="Test custom activation..."
+          className="flex-1 bg-game-bg border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-primary-500"
         />
         <button
           onClick={handleTest}
           disabled={loading || !text.trim()}
           className={`
-            px-4 py-2 rounded-lg font-medium transition-colors
+            px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
             ${loading || !text.trim()
               ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
               : 'bg-primary-600 hover:bg-primary-700 text-white'
@@ -85,10 +85,10 @@ export function TestInput() {
 
       {/* Result display */}
       {result && (
-        <div className="bg-game-bg rounded-lg p-3">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-gray-400">Max activation:</span>
-            <span className="font-mono text-primary-400">{maxActivation.toFixed(2)}</span>
+        <div className="bg-game-bg rounded-lg p-2">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs text-gray-400">Max activation:</span>
+            <span className="text-xs font-mono text-primary-400">{maxActivation.toFixed(2)}</span>
           </div>
           <div className="flex flex-wrap gap-0.5">
             {result.tokens.map((t, i) => (

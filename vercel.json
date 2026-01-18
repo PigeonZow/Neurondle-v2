@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/generate-puzzles",
+      "schedule": "5 0 * * *"
+    }
+  ]
+}

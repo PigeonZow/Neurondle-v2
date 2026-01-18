@@ -29,13 +29,13 @@ export function TokenWithTooltip({ token, activation, maxActivation }: TokenWith
 
   const tooltipElement = showTooltip && mounted ? createPortal(
     <div
-      className="fixed z-[9999] pointer-events-none bg-gray-900 border border-gray-600 rounded px-2 py-1 text-xs text-white shadow-lg"
+      className="fixed z-[9999] bg-gray-900 border border-gray-600 rounded px-2 py-1 text-xs text-white shadow-lg"
       style={{
         left: tooltipPos.x,
         top: tooltipPos.y,
       }}
     >
-      Activation: {activation.toFixed(3)}
+      Activation: {activation.toFixed(2)}
     </div>,
     document.body
   ) : null
@@ -43,7 +43,7 @@ export function TokenWithTooltip({ token, activation, maxActivation }: TokenWith
   return (
     <>
       <span
-        className="token cursor-default relative"
+        className="token cursor-default relative text-xs"
         style={{
           backgroundColor: `rgba(59, 130, 246, ${opacity})`,
         }}

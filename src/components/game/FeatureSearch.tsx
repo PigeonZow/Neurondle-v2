@@ -10,13 +10,11 @@ interface FeatureSearchProps {
   onJumpToPoint: (point: UmapPoint) => void
 }
 
-type SearchMode = 'filter' | 'jump'
-
 export function FeatureSearch({ data, onFilterChange, onJumpToPoint }: FeatureSearchProps) {
   const [searchInput, setSearchInput] = useState('')
-  const [mode, setMode] = useState<SearchMode>('filter')
   const [showDropdown, setShowDropdown] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(0)
+  const [activeFilter, setActiveFilter] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -30,32 +28,21 @@ export function FeatureSearch({ data, onFilterChange, onJumpToPoint }: FeatureSe
     })
   }, [data])
 
-  // Get fuzzy search results for jump mode
+  // Get fuzzy search results
   const searchResults = useMemo(() => {
-    if (mode !== 'jump' || searchInput.length < 2) return []
-    const results = fuse.search(searchInput, { limit: 8 })
+    if (searchInput.length < 2) return []
+    const results = fuse.search(searchInput, { limit: 6 })
     return results.map(r => r.item)
-  }, [fuse, searchInput, mode])
+  }, [fuse, searchInput])
 
-  // Debounced filter change
+  // Total items in dropdown: 1 (filter option) + feature results
+  const totalDropdownItems = searchInput.length >= 2 ? 1 + searchResults.length : 0
+
+  // Show dropdown when there's input
   useEffect(() => {
-    if (mode !== 'filter') {
-      onFilterChange('')
-      return
-    }
-
-    const timer = setTimeout(() => {
-      onFilterChange(searchInput)
-    }, 150)
-
-    return () => clearTimeout(timer)
-  }, [searchInput, mode, onFilterChange])
-
-  // Show dropdown when in jump mode with results
-  useEffect(() => {
-    setShowDropdown(mode === 'jump' && searchResults.length > 0 && searchInput.length >= 2)
+    setShowDropdown(searchInput.length >= 2)
     setSelectedIndex(0)
-  }, [mode, searchResults.length, searchInput])
+  }, [searchInput])
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -68,64 +55,63 @@ export function FeatureSearch({ data, onFilterChange, onJumpToPoint }: FeatureSe
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
-  // Keyboard navigation
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (mode === 'jump' && showDropdown) {
-      if (e.key === 'ArrowDown') {
-        e.preventDefault()
-        setSelectedIndex(i => Math.min(i + 1, searchResults.length - 1))
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault()
-        setSelectedIndex(i => Math.max(i - 1, 0))
-      } else if (e.key === 'Enter' && searchResults[selectedIndex]) {
-        e.preventDefault()
-        handleSelectResult(searchResults[selectedIndex])
-      } else if (e.key === 'Escape') {
-        setShowDropdown(false)
-      }
-    }
+  // Apply filter action
+  const applyFilter = () => {
+    if (searchInput.length < 2) return
+    setActiveFilter(searchInput)
+    onFilterChange(searchInput)
+    setShowDropdown(false)
   }
 
-  const handleSelectResult = (point: UmapPoint) => {
+  // Jump to feature action
+  const jumpToFeature = (point: UmapPoint) => {
     onJumpToPoint(point)
     setShowDropdown(false)
     setSearchInput('')
   }
 
-  const handleModeChange = (newMode: SearchMode) => {
-    setMode(newMode)
+  // Clear filter
+  const clearFilter = () => {
     setSearchInput('')
-    if (newMode === 'filter') {
-      onFilterChange('')
+    setActiveFilter('')
+    onFilterChange('')
+    setShowDropdown(false)
+  }
+
+  // Keyboard navigation
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (!showDropdown) {
+      if (e.key === 'Enter' && searchInput.length >= 2) {
+        applyFilter()
+      }
+      return
+    }
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setSelectedIndex(i => Math.min(i + 1, totalDropdownItems - 1))
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setSelectedIndex(i => Math.max(i - 1, 0))
+    } else if (e.key === 'Enter') {
+      e.preventDefault()
+      if (selectedIndex === 0) {
+        // First item = filter option
+        applyFilter()
+      } else {
+        // Feature result
+        const featureIndex = selectedIndex - 1
+        if (searchResults[featureIndex]) {
+          jumpToFeature(searchResults[featureIndex])
+        }
+      }
+    } else if (e.key === 'Escape') {
+      setShowDropdown(false)
     }
   }
 
   return (
     <div className="relative" ref={dropdownRef}>
-      {/* Mode toggle */}
-      <div className="flex mb-2 bg-game-bg rounded-lg p-1">
-        <button
-          onClick={() => handleModeChange('filter')}
-          className={`flex-1 text-xs py-1.5 px-3 rounded transition-colors ${
-            mode === 'filter'
-              ? 'bg-primary-600 text-white'
-              : 'text-gray-400 hover:text-white'
-          }`}
-        >
-          Highlight
-        </button>
-        <button
-          onClick={() => handleModeChange('jump')}
-          className={`flex-1 text-xs py-1.5 px-3 rounded transition-colors ${
-            mode === 'jump'
-              ? 'bg-primary-600 text-white'
-              : 'text-gray-400 hover:text-white'
-          }`}
-        >
-          Jump to
-        </button>
-      </div>
-
       {/* Search input */}
       <div className="relative">
         <input
@@ -134,12 +120,12 @@ export function FeatureSearch({ data, onFilterChange, onJumpToPoint }: FeatureSe
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          onFocus={() => mode === 'jump' && searchResults.length > 0 && setShowDropdown(true)}
-          placeholder={mode === 'filter' ? 'Highlight matching features...' : 'Search for a feature...'}
-          className="w-full bg-game-bg border border-gray-700 rounded-lg pl-9 pr-8 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-primary-500"
+          onFocus={() => searchInput.length >= 2 && setShowDropdown(true)}
+          placeholder="Search features..."
+          className="w-full bg-game-bg border border-gray-700 rounded-lg pl-8 pr-7 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-primary-500"
         />
         <svg
-          className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500"
+          className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -153,28 +139,41 @@ export function FeatureSearch({ data, onFilterChange, onJumpToPoint }: FeatureSe
         </svg>
         {searchInput && (
           <button
-            onClick={() => {
-              setSearchInput('')
-              onFilterChange('')
-            }}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white p-1"
+            onClick={clearFilter}
+            className="absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white p-0.5"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         )}
       </div>
 
-      {/* Jump mode dropdown results */}
+      {/* Dropdown with filter option + feature results */}
       {showDropdown && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-game-surface border border-gray-700 rounded-lg shadow-xl max-h-64 overflow-y-auto z-50">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-game-surface border border-gray-700 rounded-lg shadow-xl max-h-48 overflow-y-auto z-50">
+          {/* Filter option - always first */}
+          <button
+            onClick={applyFilter}
+            className={`w-full text-left px-2 py-1.5 text-xs border-b border-gray-800 transition-colors flex items-center gap-2 ${
+              selectedIndex === 0
+                ? 'bg-primary-600/30 text-white'
+                : 'text-gray-300 hover:bg-gray-800'
+            }`}
+          >
+            <svg className="w-3 h-3 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+            </svg>
+            <span>Highlight labels containing &quot;{searchInput}&quot;</span>
+          </button>
+
+          {/* Feature results */}
           {searchResults.map((point, index) => (
             <button
               key={point.index}
-              onClick={() => handleSelectResult(point)}
-              className={`w-full text-left px-3 py-2 text-sm border-b border-gray-800 last:border-b-0 transition-colors ${
-                index === selectedIndex
+              onClick={() => jumpToFeature(point)}
+              className={`w-full text-left px-2 py-1.5 text-xs border-b border-gray-800 last:border-b-0 transition-colors ${
+                index + 1 === selectedIndex
                   ? 'bg-primary-600/30 text-white'
                   : 'text-gray-300 hover:bg-gray-800'
               }`}
@@ -186,11 +185,22 @@ export function FeatureSearch({ data, onFilterChange, onJumpToPoint }: FeatureSe
         </div>
       )}
 
-      {/* Filter mode indicator */}
-      {mode === 'filter' && searchInput && (
-        <p className="text-xs text-gray-500 mt-1">
-          Highlighting features containing &quot;{searchInput}&quot;
-        </p>
+      {/* Active filter indicator */}
+      {activeFilter && !showDropdown && (
+        <div className="flex items-center gap-1.5 mt-1.5">
+          <span className="text-xs text-yellow-400/80 flex items-center gap-1">
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+            </svg>
+            Highlighting labes containing &quot;{activeFilter}&quot;
+          </span>
+          <button
+            onClick={clearFilter}
+            className="text-gray-500 hover:text-white text-xs"
+          >
+            (clear)
+          </button>
+        </div>
       )}
     </div>
   )

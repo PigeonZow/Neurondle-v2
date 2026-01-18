@@ -17,14 +17,14 @@ export function HintPanel({ hints, totalHints, hintsRevealed, onRevealHint }: Hi
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <span className="text-sm text-gray-400">
+        <span className="text-xs text-gray-400">
           Hints ({hintsRevealed}/{totalHints})
         </span>
         <button
           onClick={onRevealHint}
           disabled={!canRevealMore}
           className={`
-            text-sm px-3 py-1 rounded transition-colors
+            text-xs px-2 py-0.5 rounded transition-colors
             ${canRevealMore
               ? 'bg-primary-600/20 text-primary-400 hover:bg-primary-600/30'
               : 'text-gray-600 cursor-not-allowed'
@@ -35,7 +35,7 @@ export function HintPanel({ hints, totalHints, hintsRevealed, onRevealHint }: Hi
         </button>
       </div>
 
-      <div className="space-y-2 max-h-48 overflow-y-auto">
+      <div className="space-y-1.5 max-h-36 overflow-y-auto">
         <AnimatePresence>
           {hints.map((hint, index) => (
             <motion.div
@@ -43,7 +43,7 @@ export function HintPanel({ hints, totalHints, hintsRevealed, onRevealHint }: Hi
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="bg-game-bg rounded-lg p-3"
+              className="bg-game-bg rounded-lg p-2"
             >
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs text-gray-500">Hint {hint.level}</span>
