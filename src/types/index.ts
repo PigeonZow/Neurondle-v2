@@ -78,6 +78,13 @@ export interface UmapPoint {
   sparsity?: number // For coloring
 }
 
+export interface ClusterBoundary {
+  clusterId: number
+  color: string
+  pointCount: number
+  polygon: [number, number][]
+}
+
 // === SAE Configuration ===
 
 export interface SAEConfig {

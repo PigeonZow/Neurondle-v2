@@ -6,12 +6,13 @@ import { UmapCanvas, UmapCanvasRef } from './UmapCanvas'
 import { GameHeader } from './GameHeader'
 import { GameControls } from './GameControls'
 import { ResultsOverlay } from './ResultsOverlay'
-import type { Puzzle, UmapPoint } from '@/types'
+import type { Puzzle, UmapPoint, ClusterBoundary } from '@/types'
 
 export function GameContainer() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [umapData, setUmapData] = useState<UmapPoint[]>([])
+  const [clusterData, setClusterData] = useState<ClusterBoundary[]>([])
   const [searchQuery, setSearchQuery] = useState('')
 
   const umapRef = useRef<UmapCanvasRef>(null)
@@ -28,6 +29,11 @@ export function GameContainer() {
   } : null
   const showAnswer = currentRound?.phase === 'reveal'
 
+  // Clear search filter when round changes
+  useEffect(() => {
+    setSearchQuery('')
+  }, [currentRoundIndex])
+
   useEffect(() => {
     async function loadGame() {
       try {
@@ -36,12 +42,23 @@ export function GameContainer() {
         if (!puzzlesRes.ok) throw new Error('Failed to load puzzles')
         const puzzles: Puzzle[] = await puzzlesRes.json()
 
-        // Fetch UMAP data
-        const umapRes = await fetch('/api/umap')
+        // Fetch UMAP data and cluster boundaries in parallel
+        const [umapRes, clustersRes] = await Promise.all([
+          fetch('/api/umap'),
+          fetch('/api/clusters'),
+        ])
+
         if (!umapRes.ok) throw new Error('Failed to load UMAP data')
         const umap: UmapPoint[] = await umapRes.json()
 
+        // Cluster boundaries are optional - don't fail if they're missing
+        let clusters: ClusterBoundary[] = []
+        if (clustersRes.ok) {
+          clusters = await clustersRes.json()
+        }
+
         setUmapData(umap)
+        setClusterData(clusters)
         initGame(puzzles)
         setLoading(false)
       } catch (err) {
@@ -90,6 +107,7 @@ export function GameContainer() {
       <UmapCanvas
         ref={umapRef}
         data={umapData}
+        clusters={clusterData}
         searchQuery={searchQuery}
         answerPoint={answerPoint}
         showAnswer={showAnswer}

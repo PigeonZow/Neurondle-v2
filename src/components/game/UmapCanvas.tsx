@@ -2,10 +2,11 @@
 
 import { useEffect, useRef, useState, useCallback, forwardRef, useImperativeHandle } from 'react'
 import { useGameStore } from '@/lib/store/gameStore'
-import type { UmapPoint } from '@/types'
+import type { UmapPoint, ClusterBoundary } from '@/types'
 
 interface UmapCanvasProps {
   data: UmapPoint[]
+  clusters?: ClusterBoundary[]
   searchQuery?: string
   answerPoint?: { x: number; y: number } | null
   showAnswer?: boolean
@@ -51,6 +52,7 @@ class SpatialIndex {
 
 export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function UmapCanvas({
   data,
+  clusters = [],
   searchQuery = '',
   answerPoint,
   showAnswer = false,
@@ -240,9 +242,54 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
 
       // Build spatial index and create point graphics
       const spatialIndex = new SpatialIndex()
+      const clusterContainer = new PIXI.Container()  // Behind points
       const pointsContainer = new PIXI.Container()
       const highlightContainer = new PIXI.Container()
       const overlayContainer = new PIXI.Container()
+
+      // Draw cluster boundaries (behind points)
+      clusters.forEach(cluster => {
+        if (cluster.polygon.length < 3) return
+
+        const graphics = new PIXI.Graphics()
+
+        // Convert polygon coordinates to screen coordinates
+        const screenPolygon = cluster.polygon.map(([x, y]) => ({
+          x: x * scale + offsetX,
+          y: y * scale + offsetY,
+        }))
+
+        // Parse hex color to number
+        const colorNum = parseInt(cluster.color.replace('#', ''), 16)
+
+        // Draw filled polygon with very low opacity
+        graphics.poly(screenPolygon.flatMap(p => [p.x, p.y]))
+        graphics.fill({ color: colorNum, alpha: 0.08 })
+
+        // Draw dotted border
+        for (let i = 0; i < screenPolygon.length; i++) {
+          const start = screenPolygon[i]
+          const end = screenPolygon[(i + 1) % screenPolygon.length]
+
+          const dx = end.x - start.x
+          const dy = end.y - start.y
+          const dist = Math.sqrt(dx * dx + dy * dy)
+          const dashLength = 0.8
+          const gapLength = 1
+          const numDashes = Math.floor(dist / (dashLength + gapLength))
+
+          graphics.setStrokeStyle({ color: colorNum, width: 0.25, alpha: 0.4 })
+          for (let j = 0; j < numDashes; j++) {
+            const startT = (j * (dashLength + gapLength)) / dist
+            const endT = (j * (dashLength + gapLength) + dashLength) / dist
+            graphics.moveTo(start.x + dx * startT, start.y + dy * startT)
+            graphics.lineTo(start.x + dx * endT, start.y + dy * endT)
+          }
+          graphics.stroke()
+        }
+
+        clusterContainer.addChild(graphics)
+      })
 
       // High-resolution texture size for crisp rendering when zoomed in
       // We create large textures and scale down the sprites
@@ -291,6 +338,7 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
         spatialIndex.insert(point, sx, sy)
       })
 
+      viewport.addChild(clusterContainer)  // Behind everything
       viewport.addChild(pointsContainer)
       viewport.addChild(highlightContainer)
       viewport.addChild(overlayContainer)
@@ -580,7 +628,7 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
         pixiRef.current = null
       }
     }
-  }, [data, setPin, handleMouseMove])
+  }, [data, clusters, setPin, handleMouseMove])
 
   return (
     <>
