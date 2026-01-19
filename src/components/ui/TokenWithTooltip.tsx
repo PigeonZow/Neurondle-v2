@@ -20,6 +20,9 @@ export function TokenWithTooltip({ token, activation, maxActivation }: TokenWith
 
   const opacity = Math.min(activation / maxActivation * 1.5 + 0.1, 1)
 
+  // Clean up token display - replace leading underscore/▁ (common tokenizer conventions for spaces)
+  const displayToken = token.replace(/^[_▁]/, '')
+
   const handleMouseMove = (e: React.MouseEvent) => {
     setTooltipPos({
       x: e.clientX + 12,
@@ -51,7 +54,7 @@ export function TokenWithTooltip({ token, activation, maxActivation }: TokenWith
         onMouseMove={handleMouseMove}
         onMouseLeave={() => setShowTooltip(false)}
       >
-        {token}
+        {displayToken}
       </span>
       {tooltipElement}
     </>
