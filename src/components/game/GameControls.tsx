@@ -47,58 +47,72 @@ export function GameControls({ umapData, onFilterChange, onJumpToPoint }: GameCo
 
         {/* Controls panel */}
         {phase !== 'reveal' && phase !== 'complete' && (
-          <motion.div
-            initial={{ y: 100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            className="bg-game-surface/90 backdrop-blur-sm rounded-xl p-3 space-y-3"
-          >
-            {/* Expandable content */}
-            {expanded && (
-              <div className="space-y-3">
-                {/* Feature Search */}
-                <FeatureSearch
-                  data={umapData}
-                  onFilterChange={onFilterChange}
-                  onJumpToPoint={onJumpToPoint}
-                />
+          <div className="relative">
+            {/* Collapse tab - folder style */}
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="absolute -top-7 left-4 px-3 py-1.5 bg-game-surface/70 hover:bg-game-surface/90 backdrop-blur-sm rounded-t-lg text-gray-400 hover:text-white transition-all border-t border-x border-white/10"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2.5}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className={`w-4 h-4 transition-transform ${expanded ? '' : 'rotate-180'}`}
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
 
-                {/* Hint panel */}
-                <HintPanel
-                  hints={revealedHints}
-                  totalHints={totalHints}
-                  onRevealHint={revealHint}
-                  hintsRevealed={hintsRevealed}
-                />
+            <motion.div
+              initial={{ y: 100, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              className="bg-game-surface/90 backdrop-blur-sm rounded-xl p-3 space-y-3"
+            >
+              {/* Expandable content */}
+              {expanded && (
+                <div className="space-y-3">
+                  {/* Feature Search */}
+                  <FeatureSearch
+                    data={umapData}
+                    onFilterChange={onFilterChange}
+                    onJumpToPoint={onJumpToPoint}
+                  />
+
+                  {/* Hint panel */}
+                  <HintPanel
+                    hints={revealedHints}
+                    totalHints={totalHints}
+                    onRevealHint={revealHint}
+                    hintsRevealed={hintsRevealed}
+                  />
+                </div>
+              )}
+
+              {/* Test input */}
+              <TestInput />
+
+              {/* Guess button */}
+              <div className="flex justify-end">
+                <button
+                  onClick={lockIn}
+                  disabled={!canLockIn}
+                  className={`
+                    px-5 py-2 rounded-lg text-sm font-semibold transition-all
+                    ${canLockIn
+                      ? 'bg-game-highlight hover:bg-red-600 text-white'
+                      : 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                    }
+                  `}
+                >
+                  Guess
+                </button>
               </div>
-            )}
-
-            {/* Test input */}
-            <TestInput />
-
-            {/* Action buttons */}
-            <div className="flex items-center justify-between">
-              <button
-                onClick={() => setExpanded(!expanded)}
-                className="text-sm text-gray-400 hover:text-white transition-colors"
-              >
-                {expanded ? 'Collapse' : 'Expand'}
-              </button>
-
-              <button
-                onClick={lockIn}
-                disabled={!canLockIn}
-                className={`
-                  px-5 py-2 rounded-lg text-sm font-semibold transition-all
-                  ${canLockIn
-                    ? 'bg-game-highlight hover:bg-red-600 text-white'
-                    : 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                  }
-                `}
-              >
-                Lock In
-              </button>
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
         )}
       </div>
     </div>

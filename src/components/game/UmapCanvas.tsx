@@ -197,7 +197,7 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
       const maxX = Math.max(...xs)
       const minY = Math.min(...ys)
       const maxY = Math.max(...ys)
-      const padding = 100
+      const padding = 0
       const worldWidth = (maxX - minX) + padding * 2
       const worldHeight = (maxY - minY) + padding * 2
 
