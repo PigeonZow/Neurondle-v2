@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback, forwardRef, useImperativeHandle } from 'react'
 import { useGameStore } from '@/lib/store/gameStore'
+import { useConsentStore } from '@/lib/store/consentStore'
 import type { UmapPoint } from '@/types'
 
 interface UmapCanvasProps {
@@ -86,6 +87,8 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
       pixiRef.current?.centerOnPoint(point)
     },
   }), [])
+
+  const consentStatus = useConsentStore(state => state.consentStatus)
 
   const setPin = useGameStore(state => state.setPin)
   const currentPin = useGameStore(state => {
@@ -587,7 +590,7 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
       <div ref={containerRef} className="fixed inset-0" />
 
       {/* Tooltip */}
-      {tooltip.visible && tooltip.point && (
+      {tooltip.visible && tooltip.point && consentStatus !== 'pending' && (
         <div
           className="fixed z-50 pointer-events-none bg-game-surface border border-gray-700 rounded-lg px-3 py-2 shadow-xl max-w-xs"
           style={{
