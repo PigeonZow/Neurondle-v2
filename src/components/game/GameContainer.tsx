@@ -6,6 +6,7 @@ import { UmapCanvas, UmapCanvasRef } from './UmapCanvas'
 import { GameHeader } from './GameHeader'
 import { GameControls } from './GameControls'
 import { ResultsOverlay } from './ResultsOverlay'
+import { ConsentModal } from '@/components/ConsentModal'
 import type { Puzzle, UmapPoint } from '@/types'
 
 export function GameContainer() {
@@ -86,6 +87,8 @@ export function GameContainer() {
 
   return (
     <div className="relative h-screen w-screen overflow-hidden">
+      <ConsentModal />
+
       {/* Full-screen UMAP canvas */}
       <UmapCanvas
         ref={umapRef}
