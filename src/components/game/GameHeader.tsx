@@ -1,6 +1,6 @@
 'use client'
 
-import { useGameStore, selectCurrentRound } from '@/lib/store/gameStore'
+import { useGameStore } from '@/lib/store/gameStore'
 import { useOnboardingStore } from '@/lib/store/onboardingStore'
 import { formatScore } from '@/lib/services/scoring'
 
@@ -14,7 +14,7 @@ export function GameHeader() {
   const totalRounds = rounds.length || 3
 
   return (
-    <header className="game-overlay fixed top-0 left-0 right-0 p-4">
+    <header className="game-overlay fixed top-0 left-0 right-0 px-4 pt-4 pb-10 bg-gradient-to-b from-black/90 to-transparent">
       <div className="flex items-center justify-between max-w-screen-xl mx-auto">
         {/* Round indicator */}
         <div className="bg-game-surface rounded-lg px-4 py-2.5 border border-white/15 shadow-xl">

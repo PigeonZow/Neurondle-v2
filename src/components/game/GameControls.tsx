@@ -31,7 +31,7 @@ export function GameControls({ umapData, onFilterChange, onJumpToPoint }: GameCo
   const totalHints = puzzle.hints.length
 
   return (
-    <div className="game-overlay fixed bottom-0 left-0 right-0 p-4 pointer-events-none">
+    <div className="game-overlay fixed bottom-0 left-0 right-0 px-4 pt-16 pb-4 bg-gradient-to-t from-black/90 to-transparent pointer-events-none">
       <div className="max-w-2xl mx-auto space-y-3 pointer-events-auto">
         {/* Score reveal overlay */}
         <AnimatePresence>
@@ -51,8 +51,9 @@ export function GameControls({ umapData, onFilterChange, onJumpToPoint }: GameCo
             {/* Collapse tab - folder style */}
             <button
               onClick={() => setExpanded(!expanded)}
-              className="absolute -top-7 left-4 px-3 py-1.5 bg-game-surface hover:bg-[#1c2b52] rounded-t-lg text-gray-400 hover:text-white transition-all border-t border-x border-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight"
+              className="absolute -top-7 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-4 py-1.5 bg-game-surface hover:bg-[#1c2b52] rounded-t-lg text-gray-400 hover:text-white transition-all border-t border-x border-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight"
             >
+              <span className="text-xs font-medium">{expanded ? 'Hide' : 'Controls'}</span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -61,7 +62,7 @@ export function GameControls({ umapData, onFilterChange, onJumpToPoint }: GameCo
                 strokeWidth={2.5}
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className={`w-4 h-4 transition-transform ${expanded ? '' : 'rotate-180'}`}
+                className={`w-3.5 h-3.5 transition-transform ${expanded ? '' : 'rotate-180'}`}
               >
                 <polyline points="6 9 12 15 18 9" />
               </svg>
@@ -82,6 +83,8 @@ export function GameControls({ umapData, onFilterChange, onJumpToPoint }: GameCo
                     onJumpToPoint={onJumpToPoint}
                   />
 
+                  <div className="border-t border-white/10" />
+
                   {/* Hint panel */}
                   <HintPanel
                     hints={revealedHints}
@@ -93,10 +96,13 @@ export function GameControls({ umapData, onFilterChange, onJumpToPoint }: GameCo
               )}
 
               {/* Test input */}
-              <TestInput />
+              <div className="space-y-2 pt-1 border-t border-white/10 mt-1">
+                <p className="text-[10px] uppercase tracking-widest text-gray-500">Test your theory</p>
+                <TestInput />
+              </div>
 
               {/* Guess button */}
-              <div className="flex justify-end">
+              <div className="flex justify-end pt-2 border-t border-white/10">
                 <button
                   data-onboarding="lock-in-button"
                   onClick={lockIn}
@@ -105,7 +111,7 @@ export function GameControls({ umapData, onFilterChange, onJumpToPoint }: GameCo
                     px-5 py-2 rounded-lg text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight
                     ${canLockIn
                       ? 'bg-game-highlight hover:bg-red-600 text-white'
-                      : 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                      : 'border border-gray-600 text-gray-500 cursor-not-allowed'
                     }
                   `}
                 >
