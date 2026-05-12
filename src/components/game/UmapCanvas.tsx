@@ -255,12 +255,12 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
       const overlayContainer = new PIXI.Container()
 
       const TEXTURE_RADIUS = 16
-      const DISPLAY_RADIUS = 2
+      const DISPLAY_RADIUS = 2.5
       const SPRITE_SCALE = DISPLAY_RADIUS / TEXTURE_RADIUS
 
       const baseGraphics = new PIXI.Graphics()
       baseGraphics.circle(0, 0, TEXTURE_RADIUS)
-      baseGraphics.fill({ color: 0x3b82f6, alpha: 0.8 })
+      baseGraphics.fill({ color: 0xffffff, alpha: 1 })
       const baseTexture = app.renderer.generateTexture(baseGraphics)
 
       const highlightGraphics = new PIXI.Graphics()
@@ -282,10 +282,7 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
         sprite.anchor.set(0.5)
         sprite.scale.set(SPRITE_SCALE)
 
-        if (point.sparsity !== undefined) {
-          const normalized = Math.min(Math.max((point.sparsity + 6) / 6, 0), 1)
-          sprite.tint = interpolateColor(0x3b82f6, 0xe94560, normalized)
-        }
+        sprite.tint = 0x60a5fa
 
         pointsContainer.addChild(sprite)
         spriteMap.set(point.index, sprite)
@@ -407,7 +404,7 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
           highlightSprites.clear()
 
           spriteMap.forEach(sprite => {
-            sprite.alpha = indices.size > 0 ? 0.2 : 0.8
+            sprite.alpha = indices.size > 0 ? 0.35 : 1
           })
 
           const currentZoom = viewport.scaled
@@ -559,7 +556,7 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
           // Uses the same fixed-screen-size pattern as pinSprite / answerSprite.
           searchHighlightSprite = new PIXI.Graphics()
           searchHighlightSprite.circle(0, 0, 10)
-          searchHighlightSprite.stroke({ color: 0xa78bfa, width: 2.5 })
+          searchHighlightSprite.stroke({ color: 0xe94560, width: 2.5 })
           searchHighlightSprite.x = sx
           searchHighlightSprite.y = sy
           searchHighlightSprite.scale.set(1 / viewport.scaled)

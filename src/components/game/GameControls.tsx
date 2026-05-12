@@ -51,7 +51,7 @@ export function GameControls({ umapData, onFilterChange, onJumpToPoint }: GameCo
             {/* Collapse tab - folder style */}
             <button
               onClick={() => setExpanded(!expanded)}
-              className="absolute -top-7 left-4 px-3 py-1.5 bg-game-surface/70 hover:bg-game-surface/90 backdrop-blur-sm rounded-t-lg text-gray-400 hover:text-white transition-all border-t border-x border-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight"
+              className="absolute -top-7 left-4 px-3 py-1.5 bg-game-surface hover:bg-[#1c2b52] rounded-t-lg text-gray-400 hover:text-white transition-all border-t border-x border-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -70,7 +70,7 @@ export function GameControls({ umapData, onFilterChange, onJumpToPoint }: GameCo
             <motion.div
               initial={{ y: 100, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              className="bg-game-surface/90 backdrop-blur-sm rounded-xl p-3 space-y-3"
+              className="bg-game-surface rounded-xl p-3 space-y-3 border border-white/15 shadow-2xl"
             >
               {/* Expandable content */}
               {expanded && (
