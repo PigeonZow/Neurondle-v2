@@ -2,35 +2,63 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
+import { Mouse, Hand, ArrowRight, Check } from 'lucide-react'
 import { useConsentStore } from '@/lib/store/consentStore'
 import { useOnboardingStore } from '@/lib/store/onboardingStore'
 
 const STORAGE_KEY = 'neurondle-onboarding-v1'
 const TOOLTIP_W = 320
-const TOOLTIP_H = 210
+const TOOLTIP_H = 190
 const GAP = 16
 
 const STEPS = [
   {
     selector: '[data-onboarding="umap-canvas"]',
-    body: 'This is the map. Each dot is a feature. Scroll to zoom, drag to pan.',
+    title: 'The map',
+    body: 'Every dot is a neuron. The whole space is a map of what this AI has learned to recognize.',
   },
   {
     selector: '[data-onboarding="hint-panel"]',
-    body: "This is your mystery feature. Click 'Reveal Next' for example text showing where it activates. Fewer hints = higher score.",
+    title: 'Your mystery neuron',
+    body: null, // rendered as two paragraphs
   },
   {
     selector: '[data-onboarding="activation-input"]',
-    body: 'Have a hypothesis? Type a sentence here to test whether the feature activates on it.',
+    title: 'Test a hypothesis',
+    body: 'Type a sentence. Does this neuron light up on it? Use it to test your guesses.',
   },
   {
     selector: '[data-onboarding="feature-search"]',
-    body: 'Search the map by concept, or click anywhere on the map to drop your pin.',
+    title: 'Drop your pin',
+    body: 'Search the map by concept, or click anywhere to drop a pin where you think this neuron lives.',
   },
   {
     selector: '[data-onboarding="lock-in-button"]',
-    body: 'Lock in your guess when ready. Good luck.',
+    title: 'Lock it in',
+    body: 'Closer pin, higher score. Good luck.',
   },
+]
+
+// Pre-computed dot positions [cx, cy, r, opacity] — three loose clusters + sparse outliers
+const SCATTER_DOTS: Array<[number, number, number, number]> = [
+  // Cluster A — left
+  [22, 44, 2.5, 0.70], [28, 36, 1.5, 0.50], [34, 51, 2.0, 0.60],
+  [18, 54, 1.5, 0.40], [30, 60, 1.5, 0.50], [14, 42, 2.0, 0.35],
+  [38, 40, 1.5, 0.55], [24, 28, 1.5, 0.40], [40, 58, 2.0, 0.60],
+  [12, 50, 1.5, 0.45], [20, 62, 1.5, 0.35],
+  // Cluster B — centre
+  [97, 24, 2.5, 0.70], [104, 16, 1.5, 0.50], [90, 30, 2.0, 0.60],
+  [110, 36, 1.5, 0.45], [97, 42, 2.0, 0.55], [84, 18, 1.5, 0.40],
+  [116, 22, 1.5, 0.50], [100, 10, 2.0, 0.40], [107, 48, 1.5, 0.45],
+  [92, 50, 1.5, 0.35],
+  // Cluster C — right
+  [166, 38, 2.5, 0.65], [174, 30, 1.5, 0.50], [160, 48, 2.0, 0.60],
+  [180, 42, 1.5, 0.45], [170, 56, 2.0, 0.55], [156, 32, 1.5, 0.40],
+  [184, 36, 1.5, 0.50], [163, 22, 2.0, 0.40], [177, 60, 1.5, 0.40],
+  [150, 40, 1.5, 0.35],
+  // Sparse outliers
+  [52, 14, 1.5, 0.30], [74, 66, 1.5, 0.30], [132, 62, 1.5, 0.25],
+  [146, 14, 1.5, 0.30], [62, 56, 1.5, 0.25], [142, 52, 1.5, 0.30],
 ]
 
 type Phase = 'done' | 'intro' | 'coachmark'
@@ -49,7 +77,6 @@ function tooltipStyle(rect: DOMRect | null): React.CSSProperties {
   if (!rect) return { top: '50%', left: '50%', transform: 'translate(-50%,-50%)' }
 
   if (isFullscreen(rect)) {
-    // UMAP canvas covers whole screen — anchor tooltip below the game header
     return { top: `${88}px`, left: `${20}px` }
   }
 
@@ -63,6 +90,65 @@ function tooltipStyle(rect: DOMRect | null): React.CSSProperties {
   const left = Math.max(8, Math.min(rect.left, vpW - TOOLTIP_W - 8))
 
   return { top: `${Math.max(8, top)}px`, left: `${left}px` }
+}
+
+function StepDots({ current, total }: { current: number; total: number }) {
+  return (
+    <div className="flex items-center gap-1.5">
+      {Array.from({ length: total }).map((_, i) => (
+        <span
+          key={i}
+          className={`inline-block w-2 h-2 rounded-full border transition-colors ${
+            i <= current
+              ? 'bg-primary-500 border-primary-500'
+              : 'bg-transparent border-gray-600'
+          }`}
+        />
+      ))}
+    </div>
+  )
+}
+
+function CoachmarkCloseBtn({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="absolute top-2.5 right-2.5 text-gray-500 hover:text-gray-300 transition-colors"
+      aria-label="Skip tour"
+    >
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+  )
+}
+
+function CoachmarkFooter({
+  step,
+  total,
+  isLast,
+  onAdvance,
+}: {
+  step: number
+  total: number
+  isLast: boolean
+  onAdvance: () => void
+}) {
+  return (
+    <div className="flex items-center justify-between pt-1">
+      <StepDots current={step} total={total} />
+      <button
+        onClick={onAdvance}
+        className="w-7 h-7 rounded-full bg-primary-600 hover:bg-primary-700 flex items-center justify-center transition-colors flex-shrink-0"
+        aria-label={isLast ? 'Finish tour' : 'Next step'}
+      >
+        {isLast
+          ? <Check className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
+          : <ArrowRight className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
+        }
+      </button>
+    </div>
+  )
 }
 
 export function OnboardingFlow() {
@@ -81,7 +167,6 @@ export function OnboardingFlow() {
 
   useEffect(() => { setMounted(true) }, [])
 
-  // Start the flow on first visit or replay
   useEffect(() => {
     if (consentStatus === 'pending') return
 
@@ -103,13 +188,11 @@ export function OnboardingFlow() {
     }
   }, [consentStatus, replayActive, setOnboardingStatus, resetReplay])
 
-  // Measure target element whenever step or phase changes
   useEffect(() => {
     if (phase !== 'coachmark') return
     setRect(measureTarget(STEPS[step].selector))
   }, [phase, step])
 
-  // Re-measure on resize
   useEffect(() => {
     if (phase !== 'coachmark') return
     const onResize = () => setRect(measureTarget(STEPS[step].selector))
@@ -131,7 +214,6 @@ export function OnboardingFlow() {
     setPhase('done')
   }, [setOnboardingStatus])
 
-  // Escape skips
   useEffect(() => {
     if (phase === 'done') return
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') handleSkip() }
@@ -156,14 +238,33 @@ export function OnboardingFlow() {
             </svg>
           </button>
 
-          <h2 className="text-xl font-bold text-white mb-3">Welcome to Neurondle</h2>
-          <p className="text-sm text-gray-300 leading-relaxed mb-6">
-            AI models contain thousands of &lsquo;features&rsquo; — internal concepts they&rsquo;ve
-            learned, like &lsquo;mentions of Paris&rsquo; or &lsquo;scientific writing.&rsquo; You&rsquo;ll be shown
-            one mystery feature&rsquo;s behavior. Figure out what concept it represents,
-            then drop a pin where you think it lives on the map. Closer pin = higher
-            score.
-          </p>
+          <svg
+            aria-hidden
+            viewBox="0 0 200 80"
+            width={200}
+            height={80}
+            className="mx-auto mb-5 block"
+          >
+            {SCATTER_DOTS.map(([cx, cy, r, opacity], i) => (
+              <circle key={i} cx={cx} cy={cy} r={r} fill="#7c3aed" opacity={opacity} />
+            ))}
+          </svg>
+
+          <h2 className="text-xl font-bold text-white mb-4">Neurondle</h2>
+          <div className="space-y-3 mb-6">
+            <p className="text-sm text-gray-300 leading-relaxed">
+              Three rounds. One mystery neuron each. Pin it on the map.
+            </p>
+            <p className="text-sm text-gray-300 leading-relaxed">
+              Every AI hides thousands of &lsquo;neurons,&rsquo; each obsessed with one idea.
+              The Eiffel Tower. Code comments. Even the Golden Gate Bridge. We&rsquo;ll
+              show you one. Figure out what it&rsquo;s obsessed with, then drop a pin
+              where it lives.
+            </p>
+            <p className="text-sm text-gray-300 leading-relaxed">
+              Fewer hints, higher score.
+            </p>
+          </div>
           <div className="flex items-center justify-between">
             <button
               onClick={() => handleSkip()}
@@ -175,7 +276,7 @@ export function OnboardingFlow() {
               onClick={() => { setPhase('coachmark'); setStep(0) }}
               className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors"
             >
-              Start tour
+              Start
             </button>
           </div>
         </div>
@@ -184,16 +285,66 @@ export function OnboardingFlow() {
     )
   }
 
-  // ── Coachmark overlay ────────────────────────────────────────────────────────
-  const full = isFullscreen(rect)
+  // ── Step 0: map overview — centered card, vignette only, no spotlight ────────
+  if (step === 0) {
+    return createPortal(
+      <div className="fixed inset-0 z-[10001] pointer-events-auto">
+        <div
+          className="absolute inset-0"
+          style={{
+            background: 'radial-gradient(ellipse at 50% 50%, transparent 32%, rgba(0,0,0,0.62) 82%)',
+            pointerEvents: 'none',
+          }}
+          aria-hidden
+        />
+
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div
+            className="relative bg-[#16213e] border border-gray-700 rounded-xl shadow-2xl pointer-events-auto"
+            style={{ width: 340 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <CoachmarkCloseBtn onClick={() => handleSkip(step)} />
+
+            <div className="px-3 pt-2.5 pb-2.5 space-y-2">
+              <p className="text-base font-bold text-white leading-snug pr-6">The map</p>
+
+              <p className="text-sm text-gray-300 leading-relaxed">
+                Every dot is a neuron. The whole space is a map of what this AI has learned to recognize.
+              </p>
+
+              <div className="flex gap-3 pt-0.5">
+                <div className="flex flex-col items-center gap-1.5 border border-gray-700 rounded-lg py-3 flex-1">
+                  <Mouse className="w-4 h-4 text-gray-400" />
+                  <span className="text-xs text-gray-400">Scroll to zoom</span>
+                </div>
+                <div className="flex flex-col items-center gap-1.5 border border-gray-700 rounded-lg py-3 flex-1">
+                  <Hand className="w-4 h-4 text-gray-400" />
+                  <span className="text-xs text-gray-400">Drag to pan</span>
+                </div>
+              </div>
+
+              <CoachmarkFooter
+                step={0}
+                total={STEPS.length}
+                isLast={false}
+                onAdvance={() => setStep(1)}
+              />
+            </div>
+          </div>
+        </div>
+      </div>,
+      document.body
+    )
+  }
+
+  // ── Steps 1–4: anchored tooltip with spotlight ────────────────────────────
   const isLast = step === STEPS.length - 1
   const cardStyle = tooltipStyle(rect)
 
   return createPortal(
-    // Outer container captures all pointer events — game is fully blocked
     <div className="fixed inset-0 z-[10001] pointer-events-auto">
 
-      {/* SVG dim with spotlight cutout */}
       <svg
         className="absolute inset-0 w-full h-full"
         style={{ pointerEvents: 'none' }}
@@ -202,7 +353,7 @@ export function OnboardingFlow() {
         <defs>
           <mask id="onboarding-spotlight">
             <rect x="0" y="0" width="100%" height="100%" fill="white" />
-            {rect && !full && (
+            {rect && !isFullscreen(rect) && (
               <rect
                 x={rect.left - 8}
                 y={rect.top - 8}
@@ -214,53 +365,42 @@ export function OnboardingFlow() {
             )}
           </mask>
         </defs>
-        {/* Full-screen step: light veil so the map is still legible */}
-        {full
+        {isFullscreen(rect)
           ? <rect x="0" y="0" width="100%" height="100%" fill="rgba(0,0,0,0.35)" />
           : <rect x="0" y="0" width="100%" height="100%" fill="rgba(0,0,0,0.72)" mask="url(#onboarding-spotlight)" />
         }
       </svg>
 
-      {/* Tooltip card */}
       <div
-        className="absolute bg-[#16213e] border border-gray-700 rounded-xl shadow-2xl"
+        className="absolute bg-[#16213e] border border-gray-700 rounded-xl shadow-2xl relative"
         style={{ width: TOOLTIP_W, ...cardStyle, pointerEvents: 'all' }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-gray-500 font-medium">{step + 1} / {STEPS.length}</span>
-            <button
-              onClick={() => handleSkip(step)}
-              className="text-xs text-gray-600 hover:text-gray-400 transition-colors"
-            >
-              Skip tour
-            </button>
-          </div>
+        <CoachmarkCloseBtn onClick={() => handleSkip(step)} />
 
-          <p className="text-sm text-gray-200 leading-relaxed">
-            {STEPS[step].body}
-          </p>
+        <div className="px-3 pt-2.5 pb-2.5 space-y-2">
+          <p className="text-base font-bold text-white leading-snug pr-6">{STEPS[step].title}</p>
 
-          <div className="flex items-center justify-between pt-1">
-            {step > 0 ? (
-              <button
-                onClick={() => setStep(s => s - 1)}
-                className="text-sm px-3 py-1.5 rounded-lg border border-gray-700 text-gray-300 hover:bg-gray-700 transition-colors"
-              >
-                Back
-              </button>
-            ) : (
-              // Invisible placeholder to keep Next button right-aligned
-              <span className="w-[60px]" />
-            )}
-            <button
-              onClick={isLast ? handleComplete : () => setStep(s => s + 1)}
-              className="text-sm px-4 py-1.5 rounded-lg bg-primary-600 hover:bg-primary-700 text-white font-medium transition-colors"
-            >
-              {isLast ? 'Finish' : 'Next'}
-            </button>
-          </div>
+          {step === 1 ? (
+            <div className="space-y-2">
+              <p className="text-sm text-gray-300 leading-relaxed">
+                See the highlighted words below? That&rsquo;s where this neuron &lsquo;lit up&rsquo; in real text.
+                Each highlight is a clue about what it cares about.
+              </p>
+              <p className="text-sm text-gray-300 leading-relaxed">
+                Reveal more hints for harder evidence. Every hint costs points.
+              </p>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-300 leading-relaxed">{STEPS[step].body}</p>
+          )}
+
+          <CoachmarkFooter
+            step={step}
+            total={STEPS.length}
+            isLast={isLast}
+            onAdvance={isLast ? handleComplete : () => setStep(s => s + 1)}
+          />
         </div>
       </div>
 

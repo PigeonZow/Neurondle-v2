@@ -16,6 +16,7 @@ interface UmapCanvasProps {
 
 export interface UmapCanvasRef {
   centerOnPoint: (point: { x: number; y: number }) => void
+  setSearchHighlight: (point: { x: number; y: number } | null) => void
 }
 
 interface TooltipState {
@@ -73,6 +74,7 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
     resetView: () => void
     zoomToFit: (pin: { x: number; y: number }, answer: { x: number; y: number }) => void
     centerOnPoint: (point: { x: number; y: number }) => void
+    setSearchHighlight: (point: { x: number; y: number } | null) => void
   } | null>(null)
 
   const [tooltip, setTooltip] = useState<TooltipState>({
@@ -82,17 +84,17 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
     point: null,
   })
 
-  // Expose centerOnPoint to parent via ref
   useImperativeHandle(ref, () => ({
     centerOnPoint: (point: { x: number; y: number }) => {
       pixiRef.current?.centerOnPoint(point)
+    },
+    setSearchHighlight: (point: { x: number; y: number } | null) => {
+      pixiRef.current?.setSearchHighlight(point)
     },
   }), [])
 
   const consentStatus = useConsentStore(state => state.consentStatus)
   const onboardingStatus = useOnboardingStore(state => state.onboardingStatus)
-  // Ref so the stable window listener can read the current value without
-  // triggering a PixiJS re-init (handleMouseMove is a dep of the big useEffect)
   const onboardingInProgress = useRef(false)
   useEffect(() => {
     onboardingInProgress.current = onboardingStatus === 'in_progress'
@@ -104,7 +106,6 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
     return round?.pin || null
   })
 
-  // Handle mouse move for tooltip
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (onboardingInProgress.current) {
       setTooltip(prev => prev.visible ? { ...prev, visible: false } : prev)
@@ -112,7 +113,6 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
     }
     if (!pixiRef.current) return
 
-    // Check if mouse is over the game controls panel (bottom area)
     const target = e.target as HTMLElement
     const isOverControls = target.closest('.game-overlay') !== null
 
@@ -143,22 +143,18 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
     }
   }, [])
 
-  // Show answer line when revealed and zoom to fit both points
   useEffect(() => {
     if (!pixiRef.current || !showAnswer || !answerPoint || !currentPin) return
     pixiRef.current.showAnswerLine(currentPin, answerPoint)
-    // Zoom to fit the line from pin to answer
     pixiRef.current.zoomToFit(currentPin, answerPoint)
   }, [showAnswer, answerPoint, currentPin])
 
-  // Reset view when round changes
   useEffect(() => {
     if (!pixiRef.current) return
     pixiRef.current.clearPinAndLine()
     pixiRef.current.resetView()
   }, [roundKey])
 
-  // Search/highlight effect
   useEffect(() => {
     if (!pixiRef.current || !searchQuery) {
       pixiRef.current?.highlightPoints(new Set())
@@ -188,6 +184,11 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
 
       if (destroyed) return
 
+      // Capture container dimensions at init time so the UMAP scale/fit is
+      // computed for the actual canvas area (viewport width minus right panel).
+      const canvasW = window.innerWidth
+      const canvasH = window.innerHeight
+
       const app = new PIXI.Application()
       await app.init({
         resizeTo: window,
@@ -205,7 +206,6 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
       containerRef.current?.appendChild(app.canvas)
       app.canvas.id = 'game-canvas'
 
-      // Calculate bounds
       const xs = data.map(p => p.x)
       const ys = data.map(p => p.y)
       const minX = Math.min(...xs)
@@ -216,10 +216,9 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
       const worldWidth = (maxX - minX) + padding * 2
       const worldHeight = (maxY - minY) + padding * 2
 
-      // Create viewport
       const viewport = new Viewport({
-        screenWidth: window.innerWidth,
-        screenHeight: window.innerHeight,
+        screenWidth: canvasW,
+        screenHeight: canvasH,
         worldWidth,
         worldHeight,
         events: app.renderer.events,
@@ -228,23 +227,20 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
       viewport.drag().pinch().wheel().decelerate()
       app.stage.addChild(viewport)
 
-      // Scale and offset for UMAP coordinates -> screen coordinates
       const scale = Math.min(
-        (window.innerWidth - 100) / (maxX - minX),
-        (window.innerHeight - 100) / (maxY - minY)
+        (canvasW - 100) / (maxX - minX),
+        (canvasH - 100) / (maxY - minY)
       ) * 0.8
       const offsetX = -minX * scale + padding
       const offsetY = -minY * scale + padding
 
-      // Calculate initial fit
       const contentWidth = (maxX - minX) * scale
       const contentHeight = (maxY - minY) * scale
       const fitScale = Math.min(
-        window.innerWidth / (contentWidth + padding * 2),
-        window.innerHeight / (contentHeight + padding * 2)
+        canvasW / (contentWidth + padding * 2),
+        canvasH / (contentHeight + padding * 2)
       ) * 0.9
 
-      // Function to reset view
       const resetView = () => {
         viewport.setZoom(fitScale, true)
         viewport.moveCenter(
@@ -253,36 +249,29 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
         )
       }
 
-      // Build spatial index and create point graphics
       const spatialIndex = new SpatialIndex()
       const pointsContainer = new PIXI.Container()
       const highlightContainer = new PIXI.Container()
       const overlayContainer = new PIXI.Container()
 
-      // High-resolution texture size for crisp rendering when zoomed in
-      // We create large textures and scale down the sprites
-      const TEXTURE_RADIUS = 16  // High-res texture
-      const DISPLAY_RADIUS = 2   // Displayed size in world units
+      const TEXTURE_RADIUS = 16
+      const DISPLAY_RADIUS = 2
       const SPRITE_SCALE = DISPLAY_RADIUS / TEXTURE_RADIUS
 
-      // Create high-res base point texture
       const baseGraphics = new PIXI.Graphics()
       baseGraphics.circle(0, 0, TEXTURE_RADIUS)
       baseGraphics.fill({ color: 0x3b82f6, alpha: 0.8 })
       const baseTexture = app.renderer.generateTexture(baseGraphics)
 
-      // Create high-res highlight texture - slightly bigger than base
       const highlightGraphics = new PIXI.Graphics()
       highlightGraphics.circle(0, 0, TEXTURE_RADIUS * 1.5)
       highlightGraphics.fill({ color: 0xfbbf24, alpha: 0.9 })
       const highlightTexture = app.renderer.generateTexture(highlightGraphics)
       const HIGHLIGHT_SPRITE_SCALE = (DISPLAY_RADIUS * 1.5) / (TEXTURE_RADIUS * 1.5)
 
-      // Map to store sprites by index for highlighting
       const spriteMap = new Map<number, any>()
       const highlightSprites = new Map<number, any>()
 
-      // Create sprites for each point
       data.forEach(point => {
         const sx = point.x * scale + offsetX
         const sy = point.y * scale + offsetY
@@ -291,9 +280,8 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
         sprite.x = sx
         sprite.y = sy
         sprite.anchor.set(0.5)
-        sprite.scale.set(SPRITE_SCALE)  // Scale down high-res texture
+        sprite.scale.set(SPRITE_SCALE)
 
-        // Color by sparsity
         if (point.sparsity !== undefined) {
           const normalized = Math.min(Math.max((point.sparsity + 6) / 6, 0), 1)
           sprite.tint = interpolateColor(0x3b82f6, 0xe94560, normalized)
@@ -301,8 +289,6 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
 
         pointsContainer.addChild(sprite)
         spriteMap.set(point.index, sprite)
-
-        // Add to spatial index
         spatialIndex.insert(point, sx, sy)
       })
 
@@ -310,84 +296,77 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
       viewport.addChild(highlightContainer)
       viewport.addChild(overlayContainer)
 
-      // Hover indicator - matches point size (scales with zoom)
       const hoverGraphics = new PIXI.Graphics()
       hoverGraphics.circle(0, 0, DISPLAY_RADIUS + 2)
       hoverGraphics.stroke({ color: 0xffffff, width: 2 })
       hoverGraphics.visible = false
       viewport.addChild(hoverGraphics)
 
-      // Pin sprite
       let pinSprite: any = null
-      // Answer marker
       let answerSprite: any = null
-      // Line between pin and answer
       let answerLine: any = null
+      // Persistent ring highlighting the most recently searched feature dot
+      let searchHighlightSprite: any = null
 
-      // Update scales when zoom changes - keep points constant screen size
       const updateScalesOnZoom = () => {
         const zoomScale = viewport.scaled
         const pointScale = SPRITE_SCALE / zoomScale
         const highlightScale = HIGHLIGHT_SPRITE_SCALE / zoomScale
 
-        // Update all point sprites to stay constant screen size
-        spriteMap.forEach(sprite => {
-          sprite.scale.set(pointScale)
-        })
+        spriteMap.forEach(sprite => { sprite.scale.set(pointScale) })
+        highlightSprites.forEach(sprite => { sprite.scale.set(highlightScale) })
 
-        // Update highlight sprites
-        highlightSprites.forEach(sprite => {
-          sprite.scale.set(highlightScale)
-        })
+        if (pinSprite) pinSprite.scale.set(1 / zoomScale)
+        if (answerSprite) answerSprite.scale.set(1 / zoomScale)
+        if (searchHighlightSprite) searchHighlightSprite.scale.set(1 / zoomScale)
 
-        // Pin stays fixed screen size (scale inversely)
-        if (pinSprite) {
-          pinSprite.scale.set(1 / zoomScale)
-        }
-
-        // Answer marker stays fixed screen size
-        if (answerSprite) {
-          answerSprite.scale.set(1 / zoomScale)
-        }
-
-        // Hover ring stays fixed screen size
         hoverGraphics.scale.set(1 / zoomScale)
       }
 
       viewport.on('zoomed', updateScalesOnZoom)
       viewport.on('zoomed-end', updateScalesOnZoom)
-
-      // Apply initial scale
       updateScalesOnZoom()
 
-      // Handle click for pin placement
       viewport.on('clicked', (e) => {
-        const worldX = (e.world.x - offsetX) / scale
-        const worldY = (e.world.y - offsetY) / scale
+        // Snap to the nearest feature dot within 200 screen-space pixels.
+        // Converting to world-space: threshold = 200 / zoom.
+        const snapThreshold = 200 / viewport.scaled
+        const nearest = spatialIndex.findNearest(e.world.x, e.world.y, snapThreshold)
 
-        setPin({ x: worldX, y: worldY })
+        // No dot within range — silent no-op, don't place pin in dead space
+        if (!nearest) return
+
+        const snappedX = nearest.x * scale + offsetX
+        const snappedY = nearest.y * scale + offsetY
+
+        // Store UMAP-space coordinates for game logic
+        setPin({ x: nearest.x, y: nearest.y })
+
+        // Clear search highlight once the player commits a pin
+        if (searchHighlightSprite) {
+          overlayContainer.removeChild(searchHighlightSprite)
+          searchHighlightSprite.destroy()
+          searchHighlightSprite = null
+        }
 
         if (pinSprite) {
-          pinSprite.x = e.world.x
-          pinSprite.y = e.world.y
+          pinSprite.x = snappedX
+          pinSprite.y = snappedY
         } else {
           pinSprite = new PIXI.Graphics()
           pinSprite.circle(0, 0, 10)
           pinSprite.fill({ color: 0xfbbf24 })
           pinSprite.circle(0, 0, 5)
           pinSprite.fill({ color: 0xffffff })
-          pinSprite.x = e.world.x
-          pinSprite.y = e.world.y
-          // Apply initial scale to stay fixed screen size
+          pinSprite.x = snappedX
+          pinSprite.y = snappedY
           pinSprite.scale.set(1 / viewport.scaled)
           overlayContainer.addChild(pinSprite)
         }
       })
 
-      // Mouse move handler for hover
       const onPointerMove = (e: any) => {
         const worldPos = viewport.toWorld(e.global)
-        // Adjust search distance based on zoom level
         const searchDist = 20 / viewport.scaled
         const nearest = spatialIndex.findNearest(worldPos.x, worldPos.y, searchDist)
 
@@ -396,7 +375,6 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
           const sy = nearest.y * scale + offsetY
           hoverGraphics.x = sx
           hoverGraphics.y = sy
-          // Hover ring scales with zoom (matches point size)
           hoverGraphics.visible = true
         } else {
           hoverGraphics.visible = false
@@ -405,14 +383,10 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
 
       viewport.on('pointermove', onPointerMove)
 
-      // Center initially
       resetView()
 
-      // Store refs
       pixiRef.current = {
-        destroy: () => {
-          app.destroy(true)
-        },
+        destroy: () => { app.destroy(true) },
         getWorldCoords: (screenX: number, screenY: number) => {
           const worldPos = viewport.toWorld({ x: screenX, y: screenY })
           return {
@@ -426,23 +400,19 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
         offsetX,
         offsetY,
         highlightPoints: (indices: Set<number>) => {
-          // Clear existing highlights
           highlightSprites.forEach(sprite => {
             highlightContainer.removeChild(sprite)
             sprite.destroy()
           })
           highlightSprites.clear()
 
-          // Reset all point alphas
           spriteMap.forEach(sprite => {
             sprite.alpha = indices.size > 0 ? 0.2 : 0.8
           })
 
-          // Current zoom scale for fixed screen size
           const currentZoom = viewport.scaled
           const highlightScale = HIGHLIGHT_SPRITE_SCALE / currentZoom
 
-          // Add highlights for matching points
           indices.forEach(index => {
             const point = data.find(p => p.index === index)
             if (!point) return
@@ -454,15 +424,12 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
             highlightSprite.x = sx
             highlightSprite.y = sy
             highlightSprite.anchor.set(0.5)
-            highlightSprite.scale.set(highlightScale)  // Fixed screen size
+            highlightSprite.scale.set(highlightScale)
             highlightContainer.addChild(highlightSprite)
             highlightSprites.set(index, highlightSprite)
 
-            // Make original sprite fully visible
             const originalSprite = spriteMap.get(index)
-            if (originalSprite) {
-              originalSprite.alpha = 1
-            }
+            if (originalSprite) originalSprite.alpha = 1
           })
         },
         showAnswerLine: (pin, answer) => {
@@ -472,14 +439,12 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
           const ansSy = answer.y * scale + offsetY
           const currentZoom = viewport.scaled
 
-          // Draw dotted line
           if (answerLine) {
             overlayContainer.removeChild(answerLine)
             answerLine.destroy()
           }
           answerLine = new PIXI.Graphics()
 
-          // Draw dashed line
           const dx = ansSx - pinSx
           const dy = ansSy - pinSy
           const dist = Math.sqrt(dx * dx + dy * dy)
@@ -497,7 +462,6 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
           answerLine.stroke()
           overlayContainer.addChild(answerLine)
 
-          // Create answer marker (green)
           if (answerSprite) {
             overlayContainer.removeChild(answerSprite)
             answerSprite.destroy()
@@ -509,14 +473,10 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
           answerSprite.fill({ color: 0xffffff })
           answerSprite.x = ansSx
           answerSprite.y = ansSy
-          // Scale inversely to stay fixed screen size
           answerSprite.scale.set(1 / currentZoom)
           overlayContainer.addChild(answerSprite)
 
-          // Update pin sprite scale too
-          if (pinSprite) {
-            pinSprite.scale.set(1 / currentZoom)
-          }
+          if (pinSprite) pinSprite.scale.set(1 / currentZoom)
         },
         clearPinAndLine: () => {
           if (pinSprite) {
@@ -534,6 +494,11 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
             answerLine.destroy()
             answerLine = null
           }
+          if (searchHighlightSprite) {
+            overlayContainer.removeChild(searchHighlightSprite)
+            searchHighlightSprite.destroy()
+            searchHighlightSprite = null
+          }
         },
         resetView,
         zoomToFit: (pin, answer) => {
@@ -542,7 +507,6 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
           const ansSx = answer.x * scale + offsetX
           const ansSy = answer.y * scale + offsetY
 
-          // Calculate bounding box with padding
           const minX = Math.min(pinSx, ansSx)
           const maxX = Math.max(pinSx, ansSx)
           const minY = Math.min(pinSy, ansSy)
@@ -553,13 +517,11 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
           const centerX = (minX + maxX) / 2
           const centerY = (minY + maxY) / 2
 
-          // Calculate zoom to fit with padding
-          const paddingFactor = 0.3 // 30% padding on each side
-          const targetZoomX = window.innerWidth / (boxWidth * (1 + paddingFactor * 2))
-          const targetZoomY = window.innerHeight / (boxHeight * (1 + paddingFactor * 2))
-          const targetZoom = Math.min(targetZoomX, targetZoomY, 2) // Cap at 2x zoom
+          const paddingFactor = 0.3
+          const targetZoomX = canvasW / (boxWidth * (1 + paddingFactor * 2))
+          const targetZoomY = canvasH / (boxHeight * (1 + paddingFactor * 2))
+          const targetZoom = Math.min(targetZoomX, targetZoomY, 2)
 
-          // Animate to the new view
           viewport.animate({
             position: { x: centerX, y: centerY },
             scale: targetZoom,
@@ -570,18 +532,41 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
         centerOnPoint: (point) => {
           const sx = point.x * scale + offsetX
           const sy = point.y * scale + offsetY
-
-          // Animate to center on the point with a reasonable zoom
+          // "Search reveal" zoom = 2× the default fit zoom. If the player is
+          // already zoomed in further than this, just pan — don't zoom out.
+          const searchRevealZoom = fitScale * 2
+          const targetScale = Math.max(viewport.scaled, searchRevealZoom)
           viewport.animate({
             position: { x: sx, y: sy },
-            scale: 1.5,  // Zoom in a bit to show the area
-            time: 400,
+            scale: targetScale,
+            time: 600,
             ease: 'easeInOutSine',
           })
         },
+        setSearchHighlight: (point) => {
+          // Remove previous ring
+          if (searchHighlightSprite) {
+            overlayContainer.removeChild(searchHighlightSprite)
+            searchHighlightSprite.destroy()
+            searchHighlightSprite = null
+          }
+          if (!point) return
+
+          const sx = point.x * scale + offsetX
+          const sy = point.y * scale + offsetY
+
+          // Accent-colored ring sized to stand out against both the dot and background.
+          // Uses the same fixed-screen-size pattern as pinSprite / answerSprite.
+          searchHighlightSprite = new PIXI.Graphics()
+          searchHighlightSprite.circle(0, 0, 10)
+          searchHighlightSprite.stroke({ color: 0xa78bfa, width: 2.5 })
+          searchHighlightSprite.x = sx
+          searchHighlightSprite.y = sy
+          searchHighlightSprite.scale.set(1 / viewport.scaled)
+          overlayContainer.addChild(searchHighlightSprite)
+        },
       }
 
-      // Add window mouse move listener for tooltip
       window.addEventListener('mousemove', handleMouseMove)
     }
 
@@ -601,18 +586,18 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
     <>
       <div ref={containerRef} className="fixed inset-0" data-onboarding="umap-canvas" />
 
-      {/* Block all canvas pointer events during the tour so PixiJS hover/click don't fire */}
       {onboardingStatus === 'in_progress' && (
         <div className="fixed inset-0" style={{ zIndex: 1 }} />
       )}
 
-      {/* Tooltip — suppressed while consent pending or tour in progress */}
+      {/* Map dot hover tooltip — positioned above-right of cursor so the dot stays visible */}
       {tooltip.visible && tooltip.point && consentStatus !== 'pending' && onboardingStatus !== 'in_progress' && (
         <div
           className="fixed z-50 pointer-events-none bg-game-surface border border-gray-700 rounded-lg px-3 py-2 shadow-xl max-w-xs"
           style={{
             left: tooltip.x + 15,
-            top: tooltip.y + 15,
+            // Show above cursor by default; flip below only when near the top edge of the screen
+            top: tooltip.y > 80 ? tooltip.y - 76 : tooltip.y + 22,
             transform: tooltip.x > window.innerWidth - 200 ? 'translateX(-100%)' : undefined,
           }}
         >
@@ -631,7 +616,6 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
   )
 })
 
-// Helper to interpolate between two colors
 function interpolateColor(color1: number, color2: number, t: number): number {
   const r1 = (color1 >> 16) & 0xff
   const g1 = (color1 >> 8) & 0xff

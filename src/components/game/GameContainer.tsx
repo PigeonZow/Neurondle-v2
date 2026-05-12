@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { useGameStore, selectCurrentRound, selectIsGameComplete } from '@/lib/store/gameStore'
 import { UmapCanvas, UmapCanvasRef } from './UmapCanvas'
 import { GameHeader } from './GameHeader'
@@ -24,22 +24,18 @@ export function GameContainer() {
   const currentRoundIndex = useGameStore(state => state.currentRound)
   const isGameComplete = useGameStore(selectIsGameComplete)
 
-  // Get answer point and whether to show it
-  const answerPoint = currentRound ? {
-    x: currentRound.puzzle.answerX,
-    y: currentRound.puzzle.answerY,
-  } : null
+  const answerPoint = currentRound
+    ? { x: currentRound.puzzle.answerX, y: currentRound.puzzle.answerY }
+    : null
   const showAnswer = currentRound?.phase === 'reveal'
 
   useEffect(() => {
     async function loadGame() {
       try {
-        // Fetch today's puzzles
         const puzzlesRes = await fetch('/api/puzzles/today')
         if (!puzzlesRes.ok) throw new Error('Failed to load puzzles')
         const puzzles: Puzzle[] = await puzzlesRes.json()
 
-        // Fetch UMAP data
         const umapRes = await fetch('/api/umap')
         if (!umapRes.ok) throw new Error('Failed to load UMAP data')
         const umap: UmapPoint[] = await umapRes.json()
@@ -52,9 +48,13 @@ export function GameContainer() {
         setLoading(false)
       }
     }
-
     loadGame()
   }, [initGame])
+
+  const handleJumpToPoint = useCallback((point: UmapPoint) => {
+    umapRef.current?.centerOnPoint({ x: point.x, y: point.y })
+    umapRef.current?.setSearchHighlight({ x: point.x, y: point.y })
+  }, [])
 
   if (loading) {
     return (
@@ -83,37 +83,29 @@ export function GameContainer() {
     )
   }
 
-  const handleJumpToPoint = (point: UmapPoint) => {
-    umapRef.current?.centerOnPoint({ x: point.x, y: point.y })
-  }
-
   return (
     <div className="relative h-screen w-screen overflow-hidden">
       <ConsentModal />
       <ConsentBadge />
       <OnboardingFlow />
 
-      {/* Full-screen UMAP canvas */}
       <UmapCanvas
         ref={umapRef}
         data={umapData}
         searchQuery={searchQuery}
         answerPoint={answerPoint}
-        showAnswer={showAnswer}
+        showAnswer={!!showAnswer}
         roundKey={currentRoundIndex}
       />
 
-      {/* Floating header */}
       <GameHeader />
 
-      {/* Bottom controls */}
       <GameControls
         umapData={umapData}
         onFilterChange={setSearchQuery}
         onJumpToPoint={handleJumpToPoint}
       />
 
-      {/* Results overlay (shown when game complete) */}
       {isGameComplete && <ResultsOverlay />}
     </div>
   )
