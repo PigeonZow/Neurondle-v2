@@ -82,14 +82,15 @@ function tooltipStyle(rect: DOMRect | null): React.CSSProperties {
 
   const vpW = window.innerWidth
   const spaceAbove = rect.top
-
-  const top = spaceAbove >= TOOLTIP_H + GAP
-    ? rect.top - TOOLTIP_H - GAP
-    : rect.bottom + GAP
-
   const left = Math.max(8, Math.min(rect.left, vpW - TOOLTIP_W - 8))
 
-  return { top: `${Math.max(8, top)}px`, left: `${left}px` }
+  if (spaceAbove >= TOOLTIP_H + GAP) {
+    // Anchor to `bottom` so actual render height never overlaps the target,
+    // regardless of how many lines the tooltip content wraps to.
+    return { bottom: `${window.innerHeight - rect.top + GAP}px`, left: `${left}px` }
+  }
+
+  return { top: `${Math.max(8, rect.bottom + GAP)}px`, left: `${left}px` }
 }
 
 function StepDots({ current, total }: { current: number; total: number }) {
@@ -113,7 +114,7 @@ function CoachmarkCloseBtn({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="absolute top-2.5 right-2.5 text-gray-500 hover:text-gray-300 transition-colors"
+      className="absolute top-2.5 right-2.5 text-gray-500 hover:text-gray-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight rounded"
       aria-label="Skip tour"
     >
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -139,7 +140,7 @@ function CoachmarkFooter({
       <StepDots current={step} total={total} />
       <button
         onClick={onAdvance}
-        className="w-7 h-7 rounded-full bg-primary-600 hover:bg-primary-700 flex items-center justify-center transition-colors flex-shrink-0"
+        className="w-7 h-7 rounded-full bg-primary-600 hover:bg-primary-700 flex items-center justify-center transition-colors flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight"
         aria-label={isLast ? 'Finish tour' : 'Next step'}
       >
         {isLast
@@ -226,11 +227,11 @@ export function OnboardingFlow() {
   // ── Intro modal ──────────────────────────────────────────────────────────────
   if (phase === 'intro') {
     return createPortal(
-      <div className="fixed inset-0 z-[10001] flex items-center justify-center bg-black/60 p-4">
+      <div className="fixed inset-0 z-[10001] flex items-center justify-center bg-black/80 p-4">
         <div className="relative bg-[#16213e] border border-gray-700 rounded-xl p-6 w-full max-w-md shadow-2xl">
           <button
             onClick={() => handleSkip()}
-            className="absolute top-3 right-3 text-gray-500 hover:text-gray-300 transition-colors"
+            className="absolute top-3 right-3 text-gray-500 hover:text-gray-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight rounded"
             aria-label="Skip tour"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -268,13 +269,13 @@ export function OnboardingFlow() {
           <div className="flex items-center justify-between">
             <button
               onClick={() => handleSkip()}
-              className="text-sm text-gray-500 hover:text-gray-300 transition-colors"
+              className="text-sm text-gray-500 hover:text-gray-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight rounded"
             >
               Skip
             </button>
             <button
               onClick={() => { setPhase('coachmark'); setStep(0) }}
-              className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors"
+              className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight"
             >
               Start
             </button>
@@ -372,8 +373,8 @@ export function OnboardingFlow() {
       </svg>
 
       <div
-        className="absolute bg-[#16213e] border border-gray-700 rounded-xl shadow-2xl relative"
-        style={{ width: TOOLTIP_W, ...cardStyle, pointerEvents: 'all' }}
+        className="bg-[#16213e] border border-gray-700 rounded-xl shadow-2xl"
+        style={{ position: 'absolute', width: TOOLTIP_W, ...cardStyle, pointerEvents: 'all' }}
         onClick={(e) => e.stopPropagation()}
       >
         <CoachmarkCloseBtn onClick={() => handleSkip(step)} />

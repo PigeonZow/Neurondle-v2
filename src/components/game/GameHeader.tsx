@@ -40,7 +40,7 @@ export function GameHeader() {
           </div>
           <button
             onClick={triggerReplay}
-            className="bg-game-surface/80 backdrop-blur-sm rounded-full w-8 h-8 flex items-center justify-center text-gray-500 hover:text-white transition-colors text-sm font-bold"
+            className="bg-game-surface/80 backdrop-blur-sm rounded-full w-8 h-8 flex items-center justify-center text-gray-500 hover:text-white transition-colors text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight"
             aria-label="Replay tutorial"
             title="Replay tutorial"
           >

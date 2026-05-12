@@ -51,7 +51,7 @@ export function GameControls({ umapData, onFilterChange, onJumpToPoint }: GameCo
             {/* Collapse tab - folder style */}
             <button
               onClick={() => setExpanded(!expanded)}
-              className="absolute -top-7 left-4 px-3 py-1.5 bg-game-surface/70 hover:bg-game-surface/90 backdrop-blur-sm rounded-t-lg text-gray-400 hover:text-white transition-all border-t border-x border-white/10"
+              className="absolute -top-7 left-4 px-3 py-1.5 bg-game-surface/70 hover:bg-game-surface/90 backdrop-blur-sm rounded-t-lg text-gray-400 hover:text-white transition-all border-t border-x border-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -102,7 +102,7 @@ export function GameControls({ umapData, onFilterChange, onJumpToPoint }: GameCo
                   onClick={lockIn}
                   disabled={!canLockIn}
                   className={`
-                    px-5 py-2 rounded-lg text-sm font-semibold transition-all
+                    px-5 py-2 rounded-lg text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight
                     ${canLockIn
                       ? 'bg-game-highlight hover:bg-red-600 text-white'
                       : 'bg-gray-700 text-gray-500 cursor-not-allowed'

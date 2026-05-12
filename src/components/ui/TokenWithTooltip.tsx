@@ -44,14 +44,14 @@ export function TokenWithTooltip({ token, activation, maxActivation }: TokenWith
 
   const tooltipElement = showTooltip && mounted ? createPortal(
     <div
-      className="fixed z-[9999] bg-gray-900 border border-gray-600 rounded px-2 py-1 text-xs text-white shadow-lg pointer-events-none"
+      className="fixed z-[9999] bg-gray-900 border border-gray-700 rounded px-2 py-1 text-xs shadow-lg pointer-events-none whitespace-nowrap"
       style={{
         left: tooltipPos.x,
         top: tooltipPos.y,
         transform: 'translateX(-50%)',
       }}
     >
-      Activation: {activation.toFixed(2)}
+      <span className="text-gray-300">Activation </span><span className="text-primary-400 font-medium">{activation.toFixed(2)}</span>
     </div>,
     document.body
   ) : null

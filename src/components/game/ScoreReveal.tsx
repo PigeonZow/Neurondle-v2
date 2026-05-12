@@ -51,7 +51,7 @@ export function ScoreReveal({ score, distance, groundTruth, onContinue }: ScoreR
         transition={{ delay: 0.6 }}
         className="text-gray-400 mb-4"
       >
-        Distance: {formatDistance(distance)} units
+        {formatDistance(distance)} away
       </motion.p>
 
       {/* Ground truth */}
@@ -71,7 +71,7 @@ export function ScoreReveal({ score, distance, groundTruth, onContinue }: ScoreR
         animate={{ opacity: 1 }}
         transition={{ delay: 1 }}
         onClick={onContinue}
-        className="px-8 py-3 bg-primary-600 hover:bg-primary-700 rounded-lg font-semibold transition-colors"
+        className="px-8 py-3 bg-primary-600 hover:bg-primary-700 rounded-lg font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight"
       >
         Continue
       </motion.button>

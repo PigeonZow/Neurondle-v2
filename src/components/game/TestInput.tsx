@@ -66,13 +66,13 @@ export function TestInput() {
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleTest()}
           placeholder="Test custom activation..."
-          className="flex-1 bg-game-bg border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-primary-500"
+          className="flex-1 bg-game-bg border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 focus-visible:ring-2 focus-visible:ring-game-highlight"
         />
         <button
           onClick={handleTest}
           disabled={loading || !text.trim()}
           className={`
-            px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
+            px-3 py-1.5 rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight
             ${loading || !text.trim()
               ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
               : 'bg-primary-600 hover:bg-primary-700 text-white'

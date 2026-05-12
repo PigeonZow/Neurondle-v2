@@ -605,11 +605,6 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
           <p className="text-sm text-white">
             {tooltip.point.description || 'No description available'}
           </p>
-          {tooltip.point.sparsity !== undefined && (
-            <p className="text-xs text-gray-500 mt-1">
-              Sparsity: {tooltip.point.sparsity.toFixed(3)}
-            </p>
-          )}
         </div>
       )}
     </>

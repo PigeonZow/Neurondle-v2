@@ -34,7 +34,7 @@ export function ResultsOverlay() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="fixed inset-0 bg-game-bg/90 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
     >
       <motion.div
         initial={{ scale: 0.9, y: 20 }}
@@ -50,7 +50,7 @@ export function ResultsOverlay() {
           <p className="text-sm text-gray-400 mb-1">Total Score</p>
           <p className="text-4xl font-bold text-primary-400">
             {formatScore(totalScore)}
-            <span className="text-lg text-gray-500">/30,000</span>
+            <span className="text-lg text-gray-400">/30,000</span>
           </p>
         </div>
 
@@ -73,19 +73,19 @@ export function ResultsOverlay() {
         <div className="flex gap-3">
           <button
             onClick={handleShare}
-            className="flex-1 px-4 py-3 bg-primary-600 hover:bg-primary-700 rounded-lg font-semibold transition-colors"
+            className="flex-1 px-4 py-3 bg-primary-600 hover:bg-primary-700 rounded-lg font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight"
           >
             Share Results
           </button>
           <button
             onClick={() => window.location.reload()}
-            className="px-4 py-3 bg-game-bg hover:bg-gray-800 rounded-lg font-semibold transition-colors"
+            className="px-4 py-3 bg-game-bg hover:bg-gray-800 rounded-lg font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight"
           >
             Play Again
           </button>
         </div>
 
-        <p className="text-xs text-gray-500 mt-4">
+        <p className="text-xs text-gray-400 mt-4">
           Come back tomorrow for new puzzles!
         </p>
       </motion.div>

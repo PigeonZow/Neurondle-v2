@@ -24,7 +24,7 @@ export function HintPanel({ hints, totalHints, hintsRevealed, onRevealHint }: Hi
           onClick={onRevealHint}
           disabled={!canRevealMore}
           className={`
-            text-xs px-2 py-0.5 rounded transition-colors
+            text-xs px-2 py-0.5 rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight
             ${canRevealMore
               ? 'bg-primary-600/20 text-primary-400 hover:bg-primary-600/30'
               : 'text-gray-600 cursor-not-allowed'
@@ -46,8 +46,8 @@ export function HintPanel({ hints, totalHints, hintsRevealed, onRevealHint }: Hi
               className="bg-game-bg rounded-lg p-2"
             >
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs text-gray-500">Hint {hint.level}</span>
-                <span className="text-xs font-mono text-primary-400">
+                <span className="text-xs text-gray-400">Hint {hint.level}</span>
+                <span className="text-xs font-mono text-gray-300">
                   {hint.score.toFixed(1)}
                 </span>
               </div>
