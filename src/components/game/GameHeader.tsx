@@ -1,12 +1,14 @@
 'use client'
 
 import { useGameStore, selectCurrentRound } from '@/lib/store/gameStore'
+import { useOnboardingStore } from '@/lib/store/onboardingStore'
 import { formatScore } from '@/lib/services/scoring'
 
 export function GameHeader() {
   const currentRoundIndex = useGameStore(state => state.currentRound)
   const totalScore = useGameStore(state => state.totalScore)
   const rounds = useGameStore(state => state.rounds)
+  const triggerReplay = useOnboardingStore(state => state.triggerReplay)
 
   const roundNumber = currentRoundIndex + 1
   const totalRounds = rounds.length || 3
@@ -28,12 +30,22 @@ export function GameHeader() {
           <span className="text-game-highlight">dle</span>
         </h1>
 
-        {/* Score */}
-        <div className="bg-game-surface/80 backdrop-blur-sm rounded-lg px-4 py-2">
-          <span className="text-sm text-gray-400">Score</span>
-          <span className="ml-2 text-lg font-bold text-primary-400">
-            {formatScore(totalScore)}
-          </span>
+        {/* Score + replay button */}
+        <div className="flex items-center gap-2">
+          <div className="bg-game-surface/80 backdrop-blur-sm rounded-lg px-4 py-2">
+            <span className="text-sm text-gray-400">Score</span>
+            <span className="ml-2 text-lg font-bold text-primary-400">
+              {formatScore(totalScore)}
+            </span>
+          </div>
+          <button
+            onClick={triggerReplay}
+            className="bg-game-surface/80 backdrop-blur-sm rounded-full w-8 h-8 flex items-center justify-center text-gray-500 hover:text-white transition-colors text-sm font-bold"
+            aria-label="Replay tutorial"
+            title="Replay tutorial"
+          >
+            ?
+          </button>
         </div>
       </div>
     </header>

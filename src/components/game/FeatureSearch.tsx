@@ -111,7 +111,7 @@ export function FeatureSearch({ data, onFilterChange, onJumpToPoint }: FeatureSe
   }
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative" ref={dropdownRef} data-onboarding="feature-search">
       {/* Search input */}
       <div className="relative">
         <input

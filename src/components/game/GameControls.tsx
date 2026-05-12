@@ -98,6 +98,7 @@ export function GameControls({ umapData, onFilterChange, onJumpToPoint }: GameCo
               {/* Guess button */}
               <div className="flex justify-end">
                 <button
+                  data-onboarding="lock-in-button"
                   onClick={lockIn}
                   disabled={!canLockIn}
                   className={`

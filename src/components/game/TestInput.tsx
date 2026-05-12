@@ -58,7 +58,7 @@ export function TestInput() {
   const maxActivation = result?.maxScore ?? 0
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" data-onboarding="activation-input">
       <div className="flex gap-2">
         <input
           type="text"

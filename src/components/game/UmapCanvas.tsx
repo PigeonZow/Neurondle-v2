@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useCallback, forwardRef, useImperativeHandle } from 'react'
 import { useGameStore } from '@/lib/store/gameStore'
 import { useConsentStore } from '@/lib/store/consentStore'
+import { useOnboardingStore } from '@/lib/store/onboardingStore'
 import type { UmapPoint } from '@/types'
 
 interface UmapCanvasProps {
@@ -89,6 +90,13 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
   }), [])
 
   const consentStatus = useConsentStore(state => state.consentStatus)
+  const onboardingStatus = useOnboardingStore(state => state.onboardingStatus)
+  // Ref so the stable window listener can read the current value without
+  // triggering a PixiJS re-init (handleMouseMove is a dep of the big useEffect)
+  const onboardingInProgress = useRef(false)
+  useEffect(() => {
+    onboardingInProgress.current = onboardingStatus === 'in_progress'
+  }, [onboardingStatus])
 
   const setPin = useGameStore(state => state.setPin)
   const currentPin = useGameStore(state => {
@@ -98,6 +106,10 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
 
   // Handle mouse move for tooltip
   const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (onboardingInProgress.current) {
+      setTooltip(prev => prev.visible ? { ...prev, visible: false } : prev)
+      return
+    }
     if (!pixiRef.current) return
 
     // Check if mouse is over the game controls panel (bottom area)
@@ -587,10 +599,15 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
 
   return (
     <>
-      <div ref={containerRef} className="fixed inset-0" />
+      <div ref={containerRef} className="fixed inset-0" data-onboarding="umap-canvas" />
 
-      {/* Tooltip */}
-      {tooltip.visible && tooltip.point && consentStatus !== 'pending' && (
+      {/* Block all canvas pointer events during the tour so PixiJS hover/click don't fire */}
+      {onboardingStatus === 'in_progress' && (
+        <div className="fixed inset-0" style={{ zIndex: 1 }} />
+      )}
+
+      {/* Tooltip — suppressed while consent pending or tour in progress */}
+      {tooltip.visible && tooltip.point && consentStatus !== 'pending' && onboardingStatus !== 'in_progress' && (
         <div
           className="fixed z-50 pointer-events-none bg-game-surface border border-gray-700 rounded-lg px-3 py-2 shadow-xl max-w-xs"
           style={{

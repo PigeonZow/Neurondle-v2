@@ -8,6 +8,7 @@ import { GameControls } from './GameControls'
 import { ResultsOverlay } from './ResultsOverlay'
 import { ConsentModal } from '@/components/ConsentModal'
 import { ConsentBadge } from '@/components/ConsentBadge'
+import { OnboardingFlow } from '@/components/OnboardingFlow'
 import type { Puzzle, UmapPoint } from '@/types'
 
 export function GameContainer() {
@@ -90,6 +91,7 @@ export function GameContainer() {
     <div className="relative h-screen w-screen overflow-hidden">
       <ConsentModal />
       <ConsentBadge />
+      <OnboardingFlow />
 
       {/* Full-screen UMAP canvas */}
       <UmapCanvas
