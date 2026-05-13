@@ -59,7 +59,7 @@ export function GameControls() {
       </div>
 
       {/* Hints — fixed height, hint cards scroll internally */}
-      <div className="shrink-0 px-5 2xl:px-6 py-4 2xl:py-6 border-b border-white/10">
+      <div className="shrink-0 px-5 2xl:px-6 py-4 border-b border-white/10">
         <HintPanel
           hints={revealedHints}
           totalHints={totalHints}
@@ -69,7 +69,7 @@ export function GameControls() {
       </div>
 
       {/* Test input */}
-      <div className="shrink-0 px-5 2xl:px-6 py-4 2xl:py-5 border-b border-white/10 space-y-3">
+      <div className="shrink-0 px-5 2xl:px-6 py-4 border-b border-white/10 space-y-3">
         <p className="text-[10px] 2xl:text-xs uppercase tracking-widest text-gray-200">Test your theory</p>
         <TestInput />
       </div>
