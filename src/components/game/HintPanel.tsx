@@ -43,7 +43,7 @@ export function HintPanel({ hints, totalHints, hintsRevealed, onRevealHint }: Hi
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="bg-game-bg rounded-lg p-2"
+              className="bg-white/5 rounded-lg p-2"
             >
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs text-gray-400">Hint {hint.level}</span>

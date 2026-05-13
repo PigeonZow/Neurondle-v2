@@ -122,7 +122,7 @@ export function FeatureSearch({ data, onFilterChange, onJumpToPoint }: FeatureSe
           onKeyDown={handleKeyDown}
           onFocus={() => searchInput.length >= 2 && setShowDropdown(true)}
           placeholder="Search features..."
-          className="w-full bg-game-bg/90 border border-white/10 hover:border-white/20 rounded-lg pl-10 pr-9 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-primary-500/60 focus:bg-game-bg focus-visible:ring-2 focus-visible:ring-primary-500/30 transition-colors"
+          className="w-full bg-white/5 border border-white/10 hover:bg-white/[0.07] hover:border-white/15 rounded-lg pl-10 pr-9 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-primary-500/60 focus:bg-white/[0.07] focus-visible:ring-2 focus-visible:ring-primary-500/30 transition-colors"
         />
         <svg
           className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
