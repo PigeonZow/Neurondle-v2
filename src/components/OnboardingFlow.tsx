@@ -385,8 +385,7 @@ export function OnboardingFlow() {
           {step === 1 ? (
             <div className="space-y-2">
               <p className="text-sm text-gray-300 leading-relaxed">
-                See the highlighted words below? That&rsquo;s where this neuron &lsquo;lit up&rsquo; in real text.
-                Each highlight is a clue about what it cares about.
+                Each highlighted word is where this neuron &lsquo;lit up&rsquo; in real text &mdash; clues about what it cares about.
               </p>
               <p className="text-sm text-gray-300 leading-relaxed">
                 Reveal more hints for harder evidence. Every hint costs points.
