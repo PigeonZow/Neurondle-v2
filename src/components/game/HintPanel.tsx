@@ -15,7 +15,7 @@ export function HintPanel({ hints, totalHints, hintsRevealed, onRevealHint }: Hi
   const canRevealMore = hintsRevealed < totalHints
 
   return (
-    <div className="space-y-2" data-onboarding="hint-panel">
+    <div className="space-y-3" data-onboarding="hint-panel">
       <div className="flex items-center justify-between">
         <span className="text-[10px] uppercase tracking-widest text-gray-200">
           Hints ({hintsRevealed}/{totalHints})

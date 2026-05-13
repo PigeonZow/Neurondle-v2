@@ -26,7 +26,7 @@ export function GameControls() {
   return (
     <aside className="game-overlay fixed left-4 top-1/2 -translate-y-1/2 w-96 max-w-[calc(100vw-2rem)] max-h-[calc(100vh-10rem)] z-30 flex flex-col bg-game-surface/70 backdrop-blur-md rounded-2xl border border-white/15 shadow-2xl overflow-hidden pointer-events-auto">
       {/* HUD: Round + Score on one line */}
-      <div className="shrink-0 px-5 py-4 border-b border-white/10 flex items-center justify-between gap-4">
+      <div className="shrink-0 px-5 py-5 border-b border-white/10 flex items-center justify-between gap-4">
         <div>
           <p className="text-[10px] uppercase tracking-widest text-gray-200 mb-1">Round</p>
           <div className="flex items-center gap-1.5">
@@ -58,7 +58,7 @@ export function GameControls() {
       </div>
 
       {/* Hints — grows with content, scrolls only when panel hits max-h */}
-      <div className="min-h-0 overflow-y-auto px-5 py-4 border-b border-white/10">
+      <div className="min-h-0 overflow-y-auto px-5 py-5 border-b border-white/10">
         <HintPanel
           hints={revealedHints}
           totalHints={totalHints}
@@ -68,13 +68,13 @@ export function GameControls() {
       </div>
 
       {/* Test input */}
-      <div className="shrink-0 px-5 py-4 border-b border-white/10 space-y-2">
+      <div className="shrink-0 px-5 py-5 border-b border-white/10 space-y-3">
         <p className="text-[10px] uppercase tracking-widest text-gray-200">Test your theory</p>
         <TestInput />
       </div>
 
       {/* Lock-in button */}
-      <div className="shrink-0 px-5 py-4">
+      <div className="shrink-0 px-5 py-5">
         <button
           data-onboarding="lock-in-button"
           onClick={lockIn}
