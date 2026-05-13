@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  --game-bg: #1a1a2e;
+  --game-bg: #0a0d1a;
   --game-surface: #16213e;
   --game-accent: #0f3460;
   --game-highlight: #e94560;

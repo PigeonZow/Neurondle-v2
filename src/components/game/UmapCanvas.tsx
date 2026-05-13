@@ -192,7 +192,7 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
       const app = new PIXI.Application()
       await app.init({
         resizeTo: window,
-        backgroundColor: 0x1a1a2e,
+        backgroundColor: 0x0a0d1a,
         antialias: true,
         resolution: window.devicePixelRatio,
         autoDensity: true,

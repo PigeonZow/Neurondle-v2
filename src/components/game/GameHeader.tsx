@@ -14,7 +14,7 @@ export function GameHeader({ umapData, onFilterChange, onJumpToPoint }: GameHead
   const triggerReplay = useOnboardingStore(state => state.triggerReplay)
 
   return (
-    <header className="game-overlay fixed top-0 inset-x-0 z-40 h-14 bg-game-surface border-b border-white/10 shadow-lg">
+    <header className="game-overlay fixed top-0 inset-x-0 z-40 h-14 bg-game-surface/70 backdrop-blur-md border-b border-white/15 shadow-lg">
       <div className="grid grid-cols-[auto_1fr_auto] items-center gap-6 px-6 h-full">
         <h1 className="text-2xl font-bold tracking-tight">
           <span className="text-primary-400">Neuron</span>

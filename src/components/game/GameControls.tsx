@@ -24,7 +24,7 @@ export function GameControls() {
   if (phase === 'complete') return null
 
   return (
-    <aside className="game-overlay fixed left-4 top-20 w-96 max-w-[calc(100vw-2rem)] max-h-[calc(100vh-6rem)] z-30 flex flex-col bg-game-surface rounded-2xl border border-white/15 shadow-2xl overflow-hidden pointer-events-auto">
+    <aside className="game-overlay fixed left-4 top-1/2 -translate-y-1/2 w-96 max-w-[calc(100vw-2rem)] max-h-[calc(100vh-10rem)] z-30 flex flex-col bg-game-surface/70 backdrop-blur-md rounded-2xl border border-white/15 shadow-2xl overflow-hidden pointer-events-auto">
       {/* HUD: Round + Score on one line */}
       <div className="shrink-0 px-5 py-4 border-b border-white/10 flex items-center justify-between gap-4">
         <div>
