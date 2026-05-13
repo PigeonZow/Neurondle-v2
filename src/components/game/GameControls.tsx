@@ -57,8 +57,8 @@ export function GameControls() {
         </div>
       </div>
 
-      {/* Hints — grows with content, scrolls only when panel hits max-h */}
-      <div className="min-h-0 overflow-y-auto px-5 py-5 border-b border-white/10">
+      {/* Hints — fixed height, hint cards scroll internally */}
+      <div className="shrink-0 px-5 py-5 border-b border-white/10">
         <HintPanel
           hints={revealedHints}
           totalHints={totalHints}

@@ -35,14 +35,15 @@ export function HintPanel({ hints, totalHints, hintsRevealed, onRevealHint }: Hi
         </button>
       </div>
 
-      <div className="space-y-1.5">
-        <AnimatePresence>
-          {hints.map((hint, index) => (
+      <div className="space-y-1.5 h-60 overflow-y-auto pr-1">
+        <AnimatePresence initial={false}>
+          {[...hints].reverse().map((hint) => (
             <motion.div
               key={hint.id}
-              initial={{ opacity: 0, y: -10 }}
+              layout
+              initial={{ opacity: 0, y: -16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
+              transition={{ type: 'spring', stiffness: 320, damping: 30 }}
               className="bg-white/5 rounded-lg p-2"
             >
               <div className="flex items-center justify-between mb-1">
