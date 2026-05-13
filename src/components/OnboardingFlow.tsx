@@ -15,27 +15,27 @@ const STEPS = [
   {
     selector: '[data-onboarding="umap-canvas"]',
     title: 'The map',
-    body: 'Every dot is a neuron. The whole space is a map of what this AI has learned to recognize.',
+    body: 'Each dot is one neuron. Together they form a map of the concepts this AI recognizes.',
   },
   {
     selector: '[data-onboarding="hint-panel"]',
-    title: 'Your mystery neuron',
+    title: 'Hints',
     body: null, // rendered as two paragraphs
   },
   {
     selector: '[data-onboarding="activation-input"]',
-    title: 'Test a hypothesis',
-    body: 'Type a sentence. Does this neuron light up on it? Use it to test your guesses.',
+    title: 'Test your theory',
+    body: 'Type any text to see how strongly the neuron activates on it. Useful for testing a hunch before locking in.',
   },
   {
     selector: '[data-onboarding="feature-search"]',
-    title: 'Drop your pin',
-    body: 'Search the map by concept, or click anywhere to drop a pin where you think this neuron lives.',
+    title: 'Place your pin',
+    body: 'Search the map for a concept, or click anywhere to drop a pin.',
   },
   {
     selector: '[data-onboarding="lock-in-button"]',
-    title: 'Lock it in',
-    body: 'Closer pin, higher score. Good luck.',
+    title: 'Lock in',
+    body: 'Closer pins earn higher scores.',
   },
 ]
 
@@ -257,10 +257,7 @@ export function OnboardingFlow() {
               Three rounds. One mystery neuron each. Pin it on the map.
             </p>
             <p className="text-sm text-gray-300 leading-relaxed">
-              Every AI hides thousands of &lsquo;neurons,&rsquo; each obsessed with one idea.
-              The Eiffel Tower. Code comments. Even the Golden Gate Bridge. We&rsquo;ll
-              show you one. Figure out what it&rsquo;s obsessed with, then drop a pin
-              where it lives.
+              Inside every AI are thousands of neurons. Each one is tuned to a single concept: a place, a word, a pattern. You&rsquo;ll see one per round. Identify the concept, then place a pin on its location on the map.
             </p>
             <p className="text-sm text-gray-300 leading-relaxed">
               Fewer hints, higher score.
@@ -385,10 +382,10 @@ export function OnboardingFlow() {
           {step === 1 ? (
             <div className="space-y-2">
               <p className="text-sm text-gray-300 leading-relaxed">
-                Each highlighted word is where this neuron &lsquo;lit up&rsquo; in real text &mdash; clues about what it cares about.
+                Highlighted words are where the neuron activated in real text. Each one is a clue to the concept.
               </p>
               <p className="text-sm text-gray-300 leading-relaxed">
-                Reveal more hints for harder evidence. Every hint costs points.
+                Reveal more hints for stronger evidence. Every hint costs points.
               </p>
             </div>
           ) : (
