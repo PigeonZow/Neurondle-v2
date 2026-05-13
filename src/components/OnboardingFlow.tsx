@@ -247,7 +247,7 @@ export function OnboardingFlow() {
             className="mx-auto mb-5 block"
           >
             {SCATTER_DOTS.map(([cx, cy, r, opacity], i) => (
-              <circle key={i} cx={cx} cy={cy} r={r} fill="#7c3aed" opacity={opacity} />
+              <circle key={i} cx={cx} cy={cy} r={r} fill="#60a5fa" opacity={opacity} />
             ))}
           </svg>
 
