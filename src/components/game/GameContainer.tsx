@@ -1,11 +1,13 @@
 'use client'
 
 import { useEffect, useState, useRef, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useGameStore, selectCurrentRound, selectIsGameComplete } from '@/lib/store/gameStore'
 import { UmapCanvas, UmapCanvasRef } from './UmapCanvas'
 import { GameHeader } from './GameHeader'
 import { GameControls } from './GameControls'
 import { ResultsOverlay } from './ResultsOverlay'
+import { ScoreReveal } from './ScoreReveal'
 import { ConsentModal } from '@/components/ConsentModal'
 import { ConsentBadge } from '@/components/ConsentBadge'
 import { OnboardingFlow } from '@/components/OnboardingFlow'
@@ -23,6 +25,7 @@ export function GameContainer() {
   const currentRound = useGameStore(selectCurrentRound)
   const currentRoundIndex = useGameStore(state => state.currentRound)
   const isGameComplete = useGameStore(selectIsGameComplete)
+  const nextRound = useGameStore(state => state.nextRound)
 
   const answerPoint = currentRound
     ? { x: currentRound.puzzle.answerX, y: currentRound.puzzle.answerY }
@@ -83,6 +86,8 @@ export function GameContainer() {
     )
   }
 
+  const isReveal = currentRound?.phase === 'reveal' && currentRound.score !== null
+
   return (
     <div className="relative h-screen w-screen overflow-hidden">
       <ConsentModal />
@@ -98,13 +103,33 @@ export function GameContainer() {
         roundKey={currentRoundIndex}
       />
 
-      <GameHeader />
-
-      <GameControls
+      <GameHeader
         umapData={umapData}
         onFilterChange={setSearchQuery}
         onJumpToPoint={handleJumpToPoint}
       />
+
+      <GameControls />
+
+      <AnimatePresence>
+        {isReveal && currentRound && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+          >
+            <div className="max-w-md w-full">
+              <ScoreReveal
+                score={currentRound.score!}
+                distance={currentRound.distance!}
+                groundTruth={currentRound.puzzle.groundTruthLabel}
+                onContinue={nextRound}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {isGameComplete && <ResultsOverlay />}
     </div>

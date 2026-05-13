@@ -122,10 +122,10 @@ export function FeatureSearch({ data, onFilterChange, onJumpToPoint }: FeatureSe
           onKeyDown={handleKeyDown}
           onFocus={() => searchInput.length >= 2 && setShowDropdown(true)}
           placeholder="Search features..."
-          className="w-full bg-game-bg border border-gray-700 rounded-lg pl-8 pr-7 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 focus-visible:ring-2 focus-visible:ring-game-highlight"
+          className="w-full bg-game-bg/90 border border-white/10 hover:border-white/20 rounded-lg pl-10 pr-9 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-primary-500/60 focus:bg-game-bg focus-visible:ring-2 focus-visible:ring-primary-500/30 transition-colors"
         />
         <svg
-          className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500"
+          className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -140,9 +140,9 @@ export function FeatureSearch({ data, onFilterChange, onJumpToPoint }: FeatureSe
         {searchInput && (
           <button
             onClick={clearFilter}
-            className="absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white p-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight rounded"
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white p-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight rounded"
           >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>

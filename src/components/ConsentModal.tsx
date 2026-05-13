@@ -55,7 +55,7 @@ export function ConsentModal() {
 
                 <div className="flex items-start gap-2 shrink-0">
                   <div className="text-right">
-                    <p className="text-[10px] uppercase tracking-[0.18em] text-gray-400 font-mono">
+                    <p className="text-[10px] uppercase tracking-[0.18em] text-gray-200 font-mono">
                       Study
                     </p>
                     <p className="text-xs font-mono text-gray-300 mt-0.5">
@@ -142,14 +142,14 @@ export function ConsentModal() {
                   </p>
 
                   <div className="mt-3">
-                    <p className="text-[11px] font-mono uppercase tracking-[0.18em] text-gray-400 mb-1.5">
+                    <p className="text-[11px] font-mono uppercase tracking-[0.18em] text-gray-200 mb-1.5">
                       Withdrawal reference
                     </p>
                     <div className="bg-game-bg rounded-lg border border-white/5 px-3 py-2.5 flex items-center justify-between gap-3">
                       <code className="text-xs font-mono text-primary-300 break-all">
                         {getSessionToken()}
                       </code>
-                      <span className="text-[10px] uppercase tracking-wider font-mono text-gray-400 shrink-0">
+                      <span className="text-[10px] uppercase tracking-wider font-mono text-gray-200 shrink-0">
                         session
                       </span>
                     </div>
@@ -288,7 +288,7 @@ function Section({
   return (
     <section className="scroll-mt-4">
       <div className="flex items-baseline gap-3 mb-3">
-        <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-gray-400">
+        <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-gray-200">
           {num} <span className="text-gray-700">/</span> {label}
         </span>
       </div>
@@ -349,7 +349,7 @@ function ContactCard({
 }) {
   return (
     <div className="bg-game-bg/60 rounded-lg border border-white/5 p-3.5">
-      <p className="text-[10px] font-mono uppercase tracking-[0.16em] text-gray-400 mb-2">
+      <p className="text-[10px] font-mono uppercase tracking-[0.16em] text-gray-200 mb-2">
         {heading}
       </p>
       <div className="space-y-1 text-xs">{children}</div>
@@ -366,7 +366,7 @@ function ContactRow({
 }) {
   return (
     <div className="flex gap-2">
-      <span className="text-gray-400 w-12 shrink-0 font-mono text-[10px] uppercase tracking-wider pt-px">
+      <span className="text-gray-200 w-12 shrink-0 font-mono text-[10px] uppercase tracking-wider pt-px">
         {label}
       </span>
       <span className="text-gray-200">{children}</span>

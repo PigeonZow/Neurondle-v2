@@ -17,7 +17,7 @@ export function HintPanel({ hints, totalHints, hintsRevealed, onRevealHint }: Hi
   return (
     <div className="space-y-2" data-onboarding="hint-panel">
       <div className="flex items-center justify-between">
-        <span className="text-xs text-gray-400">
+        <span className="text-[10px] uppercase tracking-widest text-gray-200">
           Hints ({hintsRevealed}/{totalHints})
         </span>
         <button
@@ -35,7 +35,7 @@ export function HintPanel({ hints, totalHints, hintsRevealed, onRevealHint }: Hi
         </button>
       </div>
 
-      <div className="space-y-1.5 max-h-36 overflow-y-auto">
+      <div className="space-y-1.5">
         <AnimatePresence>
           {hints.map((hint, index) => (
             <motion.div

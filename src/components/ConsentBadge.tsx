@@ -31,7 +31,7 @@ export function ConsentBadge() {
       className="group fixed bottom-3 right-3 z-40 flex items-center gap-2 bg-game-surface/85 backdrop-blur-sm hover:bg-game-surface rounded-md pl-2 pr-2.5 py-1.5 ring-1 ring-white/5 hover:ring-white/10 transition-all pointer-events-auto shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight"
     >
       <span className={`h-1.5 w-1.5 rounded-full ${status.dot}`} aria-hidden />
-      <span className="text-[10px] font-mono uppercase tracking-[0.14em] text-gray-400 group-hover:text-gray-200 transition-colors">
+      <span className="text-[10px] font-mono uppercase tracking-[0.14em] text-gray-200 group-hover:text-white transition-colors">
         Research · {status.label}
       </span>
       <span className="text-[10px] font-mono text-gray-400 group-hover:text-gray-200 transition-colors hidden sm:inline">
