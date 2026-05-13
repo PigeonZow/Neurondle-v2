@@ -20,7 +20,7 @@ export function TokenWithTooltip({ token, activation, maxActivation }: TokenWith
 
   useEffect(() => { setMounted(true) }, [])
 
-  const opacity = Math.min(activation / maxActivation * 1.5 + 0.1, 1)
+  const opacity = Math.min(Math.pow(activation / maxActivation, 1.6) + 0.05, 1)
 
   const displayToken = token.replace(/^[_▁]/, '')
 
@@ -51,7 +51,7 @@ export function TokenWithTooltip({ token, activation, maxActivation }: TokenWith
         transform: 'translateX(-50%)',
       }}
     >
-      <span className="text-gray-300">Activation </span><span className="text-primary-400 font-medium">{activation.toFixed(2)}</span>
+      <span className="text-gray-300">Activation </span><span className="text-game-highlight font-medium">{activation.toFixed(2)}</span>
     </div>,
     document.body
   ) : null
@@ -61,7 +61,7 @@ export function TokenWithTooltip({ token, activation, maxActivation }: TokenWith
       <span
         ref={spanRef}
         className="token cursor-default relative text-xs"
-        style={{ backgroundColor: `rgba(59, 130, 246, ${opacity})` }}
+        style={{ backgroundColor: `rgba(233, 69, 96, ${opacity})` }}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={() => setShowTooltip(false)}
       >
