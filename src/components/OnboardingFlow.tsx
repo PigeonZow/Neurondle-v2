@@ -73,7 +73,7 @@ function isFullscreen(rect: DOMRect | null): boolean {
   return rect.width > window.innerWidth * 0.8 && rect.height > window.innerHeight * 0.8
 }
 
-function tooltipStyle(rect: DOMRect | null): React.CSSProperties {
+function tooltipStyle(rect: DOMRect | null, estHeight: number = TOOLTIP_H): React.CSSProperties {
   if (!rect) return { top: '50%', left: '50%', transform: 'translate(-50%,-50%)' }
 
   if (isFullscreen(rect)) {
@@ -81,16 +81,27 @@ function tooltipStyle(rect: DOMRect | null): React.CSSProperties {
   }
 
   const vpW = window.innerWidth
+  const vpH = window.innerHeight
   const spaceAbove = rect.top
+  const spaceBelow = vpH - rect.bottom
   const left = Math.max(8, Math.min(rect.left, vpW - TOOLTIP_W - 8))
 
-  if (spaceAbove >= TOOLTIP_H + GAP) {
+  if (spaceAbove >= estHeight + GAP) {
     // Anchor to `bottom` so actual render height never overlaps the target,
     // regardless of how many lines the tooltip content wraps to.
-    return { bottom: `${window.innerHeight - rect.top + GAP}px`, left: `${left}px` }
+    return { bottom: `${vpH - rect.top + GAP}px`, left: `${left}px` }
   }
 
-  return { top: `${Math.max(8, rect.bottom + GAP)}px`, left: `${left}px` }
+  // Not enough room above — place below. If below also can't fully fit,
+  // still anchor to top and let the natural document flow handle overflow
+  // (better than letting the top get clipped).
+  if (spaceBelow >= estHeight + GAP || spaceBelow >= spaceAbove) {
+    return { top: `${Math.max(8, rect.bottom + GAP)}px`, left: `${left}px` }
+  }
+
+  // Above gives more room than below even though neither fully fits.
+  // Pin to top of viewport so the head of the tooltip stays visible.
+  return { top: '8px', left: `${left}px` }
 }
 
 function StepDots({ current, total }: { current: number; total: number }) {
@@ -338,7 +349,9 @@ export function OnboardingFlow() {
 
   // ── Steps 1–4: anchored tooltip with spotlight ────────────────────────────
   const isLast = step === STEPS.length - 1
-  const cardStyle = tooltipStyle(rect)
+  // Step 1 (Hints) renders two paragraphs and runs taller than the default estimate.
+  const estTooltipHeight = step === 1 ? 260 : TOOLTIP_H
+  const cardStyle = tooltipStyle(rect, estTooltipHeight)
 
   return createPortal(
     <div className="fixed inset-0 z-[10001] pointer-events-auto">

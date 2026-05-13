@@ -24,11 +24,11 @@ export function GameControls() {
   if (phase === 'complete') return null
 
   return (
-    <aside className="game-overlay fixed left-4 top-1/2 -translate-y-1/2 w-96 max-w-[calc(100vw-2rem)] max-h-[calc(100vh-10rem)] z-30 flex flex-col bg-game-surface/70 backdrop-blur-md rounded-2xl border border-white/15 shadow-2xl overflow-hidden pointer-events-auto">
+    <aside className="game-overlay fixed left-4 top-1/2 -translate-y-1/2 w-80 2xl:w-[28rem] min-[1920px]:w-[32rem] max-w-[calc(100vw-2rem)] max-h-[calc(100vh-6rem)] z-30 flex flex-col bg-game-surface/70 backdrop-blur-md rounded-2xl border border-white/15 shadow-2xl overflow-hidden pointer-events-auto">
       {/* HUD: Round + Score on one line */}
-      <div className="shrink-0 px-5 py-5 border-b border-white/10 flex items-center justify-between gap-4">
+      <div className="shrink-0 px-5 2xl:px-6 py-4 2xl:py-6 border-b border-white/10 flex items-center justify-between gap-4">
         <div>
-          <p className="text-[10px] uppercase tracking-widest text-gray-200 mb-1">Round</p>
+          <p className="text-[10px] 2xl:text-xs uppercase tracking-widest text-gray-200 mb-1">Round</p>
           <div className="flex items-center gap-1.5">
             {Array.from({ length: totalRounds }).map((_, i) => {
               const isPast = i < currentRoundIndex
@@ -41,7 +41,7 @@ export function GameControls() {
               return (
                 <div
                   key={i}
-                  className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold tabular-nums ${cls}`}
+                  className={`w-7 h-7 2xl:w-8 2xl:h-8 rounded-full flex items-center justify-center text-sm 2xl:text-base font-bold tabular-nums ${cls}`}
                 >
                   {i + 1}
                 </div>
@@ -50,15 +50,15 @@ export function GameControls() {
           </div>
         </div>
         <div className="text-right">
-          <p className="text-[10px] uppercase tracking-widest text-gray-200 mb-1">Score</p>
-          <p className="text-2xl font-bold text-primary-400 tabular-nums">
+          <p className="text-[10px] 2xl:text-xs uppercase tracking-widest text-gray-200 mb-1">Score</p>
+          <p className="text-2xl 2xl:text-3xl font-bold text-primary-400 tabular-nums">
             {formatScore(totalScore)}
           </p>
         </div>
       </div>
 
       {/* Hints — fixed height, hint cards scroll internally */}
-      <div className="shrink-0 px-5 py-5 border-b border-white/10">
+      <div className="shrink-0 px-5 2xl:px-6 py-4 2xl:py-6 border-b border-white/10">
         <HintPanel
           hints={revealedHints}
           totalHints={totalHints}
@@ -68,18 +68,18 @@ export function GameControls() {
       </div>
 
       {/* Test input */}
-      <div className="shrink-0 px-5 py-5 border-b border-white/10 space-y-3">
-        <p className="text-[10px] uppercase tracking-widest text-gray-200">Test your theory</p>
+      <div className="shrink-0 px-5 2xl:px-6 py-4 2xl:py-5 border-b border-white/10 space-y-3">
+        <p className="text-[10px] 2xl:text-xs uppercase tracking-widest text-gray-200">Test your theory</p>
         <TestInput />
       </div>
 
       {/* Lock-in button */}
-      <div className="shrink-0 px-5 py-5">
+      <div className="shrink-0 px-5 2xl:px-6 py-4 2xl:py-5">
         <button
           data-onboarding="lock-in-button"
           onClick={lockIn}
           disabled={!canLockIn}
-          className={`w-full py-3 rounded-xl text-base font-bold tracking-wide transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight
+          className={`w-full py-2.5 2xl:py-3.5 rounded-xl text-sm 2xl:text-lg font-bold tracking-wide transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight
             ${canLockIn
               ? 'bg-game-highlight hover:bg-red-600 text-white shadow-[0_0_20px_rgba(233,69,96,0.4)]'
               : 'border border-gray-600 text-gray-500 cursor-not-allowed'

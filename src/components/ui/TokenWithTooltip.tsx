@@ -60,7 +60,7 @@ export function TokenWithTooltip({ token, activation, maxActivation }: TokenWith
     <>
       <span
         ref={spanRef}
-        className="token cursor-default relative text-xs"
+        className="token cursor-default relative text-xs 2xl:text-sm"
         style={{ backgroundColor: `rgba(233, 69, 96, ${opacity})` }}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={() => setShowTooltip(false)}
