@@ -1,13 +1,16 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useGameStore, selectCurrentRound, selectIsGameComplete } from '@/lib/store/gameStore'
 import { UmapCanvas, UmapCanvasRef } from './UmapCanvas'
 import { GameHeader } from './GameHeader'
 import { GameControls } from './GameControls'
 import { ResultsOverlay } from './ResultsOverlay'
+import { ScoreReveal } from './ScoreReveal'
 import { ConsentModal } from '@/components/ConsentModal'
 import { ConsentBadge } from '@/components/ConsentBadge'
+import { OnboardingFlow } from '@/components/OnboardingFlow'
 import type { Puzzle, UmapPoint } from '@/types'
 
 export function GameContainer() {
@@ -22,23 +25,20 @@ export function GameContainer() {
   const currentRound = useGameStore(selectCurrentRound)
   const currentRoundIndex = useGameStore(state => state.currentRound)
   const isGameComplete = useGameStore(selectIsGameComplete)
+  const nextRound = useGameStore(state => state.nextRound)
 
-  // Get answer point and whether to show it
-  const answerPoint = currentRound ? {
-    x: currentRound.puzzle.answerX,
-    y: currentRound.puzzle.answerY,
-  } : null
+  const answerPoint = currentRound
+    ? { x: currentRound.puzzle.answerX, y: currentRound.puzzle.answerY }
+    : null
   const showAnswer = currentRound?.phase === 'reveal'
 
   useEffect(() => {
     async function loadGame() {
       try {
-        // Fetch today's puzzles
         const puzzlesRes = await fetch('/api/puzzles/today')
         if (!puzzlesRes.ok) throw new Error('Failed to load puzzles')
         const puzzles: Puzzle[] = await puzzlesRes.json()
 
-        // Fetch UMAP data
         const umapRes = await fetch('/api/umap')
         if (!umapRes.ok) throw new Error('Failed to load UMAP data')
         const umap: UmapPoint[] = await umapRes.json()
@@ -51,9 +51,13 @@ export function GameContainer() {
         setLoading(false)
       }
     }
-
     loadGame()
   }, [initGame])
+
+  const handleJumpToPoint = useCallback((point: UmapPoint) => {
+    umapRef.current?.centerOnPoint({ x: point.x, y: point.y })
+    umapRef.current?.setSearchHighlight({ x: point.x, y: point.y })
+  }, [])
 
   if (loading) {
     return (
@@ -82,36 +86,51 @@ export function GameContainer() {
     )
   }
 
-  const handleJumpToPoint = (point: UmapPoint) => {
-    umapRef.current?.centerOnPoint({ x: point.x, y: point.y })
-  }
+  const isReveal = currentRound?.phase === 'reveal' && currentRound.score !== null
 
   return (
     <div className="relative h-screen w-screen overflow-hidden">
       <ConsentModal />
       <ConsentBadge />
+      <OnboardingFlow />
 
-      {/* Full-screen UMAP canvas */}
       <UmapCanvas
         ref={umapRef}
         data={umapData}
         searchQuery={searchQuery}
         answerPoint={answerPoint}
-        showAnswer={showAnswer}
+        showAnswer={!!showAnswer}
         roundKey={currentRoundIndex}
       />
 
-      {/* Floating header */}
-      <GameHeader />
-
-      {/* Bottom controls */}
-      <GameControls
+      <GameHeader
         umapData={umapData}
         onFilterChange={setSearchQuery}
         onJumpToPoint={handleJumpToPoint}
       />
 
-      {/* Results overlay (shown when game complete) */}
+      <GameControls />
+
+      <AnimatePresence>
+        {isReveal && currentRound && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+          >
+            <div className="max-w-md w-full">
+              <ScoreReveal
+                score={currentRound.score!}
+                distance={currentRound.distance!}
+                groundTruth={currentRound.puzzle.groundTruthLabel}
+                onContinue={nextRound}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {isGameComplete && <ResultsOverlay />}
     </div>
   )

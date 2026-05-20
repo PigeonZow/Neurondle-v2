@@ -111,7 +111,7 @@ export function FeatureSearch({ data, onFilterChange, onJumpToPoint }: FeatureSe
   }
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative" ref={dropdownRef} data-onboarding="feature-search">
       {/* Search input */}
       <div className="relative">
         <input
@@ -122,10 +122,10 @@ export function FeatureSearch({ data, onFilterChange, onJumpToPoint }: FeatureSe
           onKeyDown={handleKeyDown}
           onFocus={() => searchInput.length >= 2 && setShowDropdown(true)}
           placeholder="Search features..."
-          className="w-full bg-game-bg border border-gray-700 rounded-lg pl-8 pr-7 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-primary-500"
+          className="w-full bg-white/5 border border-white/10 hover:bg-white/[0.07] hover:border-white/15 rounded-lg pl-10 pr-9 py-2 2xl:py-2.5 text-sm 2xl:text-base text-white placeholder-gray-400 focus:outline-none focus:border-primary-500/60 focus:bg-white/[0.07] focus-visible:ring-2 focus-visible:ring-primary-500/30 transition-colors"
         />
         <svg
-          className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500"
+          className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 2xl:w-5 2xl:h-5 text-gray-400"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -140,9 +140,9 @@ export function FeatureSearch({ data, onFilterChange, onJumpToPoint }: FeatureSe
         {searchInput && (
           <button
             onClick={clearFilter}
-            className="absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white p-0.5"
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white p-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight rounded"
           >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -155,7 +155,7 @@ export function FeatureSearch({ data, onFilterChange, onJumpToPoint }: FeatureSe
           {/* Filter option - always first */}
           <button
             onClick={applyFilter}
-            className={`w-full text-left px-2 py-1.5 text-xs border-b border-gray-800 transition-colors flex items-center gap-2 ${
+            className={`w-full text-left px-2 py-1.5 text-xs border-b border-gray-800 transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight ${
               selectedIndex === 0
                 ? 'bg-primary-600/30 text-white'
                 : 'text-gray-300 hover:bg-gray-800'
@@ -172,7 +172,7 @@ export function FeatureSearch({ data, onFilterChange, onJumpToPoint }: FeatureSe
             <button
               key={point.index}
               onClick={() => jumpToFeature(point)}
-              className={`w-full text-left px-2 py-1.5 text-xs border-b border-gray-800 last:border-b-0 transition-colors ${
+              className={`w-full text-left px-2 py-1.5 text-xs border-b border-gray-800 last:border-b-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight ${
                 index + 1 === selectedIndex
                   ? 'bg-primary-600/30 text-white'
                   : 'text-gray-300 hover:bg-gray-800'

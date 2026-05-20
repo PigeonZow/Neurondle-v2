@@ -58,7 +58,7 @@ export function TestInput() {
   const maxActivation = result?.maxScore ?? 0
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" data-onboarding="activation-input">
       <div className="flex gap-2">
         <input
           type="text"
@@ -66,13 +66,13 @@ export function TestInput() {
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleTest()}
           placeholder="Test custom activation..."
-          className="flex-1 bg-game-bg border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-primary-500"
+          className="flex-1 bg-white/5 border border-white/10 hover:border-white/15 rounded-lg px-3 py-1.5 2xl:py-2 text-sm 2xl:text-base text-white placeholder-gray-400 focus:outline-none focus:border-primary-500/60 focus:bg-white/[0.07] focus-visible:ring-2 focus-visible:ring-primary-500/30 transition-colors"
         />
         <button
           onClick={handleTest}
           disabled={loading || !text.trim()}
           className={`
-            px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
+            px-3 2xl:px-4 py-1.5 2xl:py-2 rounded-lg text-sm 2xl:text-base font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight
             ${loading || !text.trim()
               ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
               : 'bg-primary-600 hover:bg-primary-700 text-white'
@@ -85,10 +85,10 @@ export function TestInput() {
 
       {/* Result display */}
       {result && (
-        <div className="bg-game-bg rounded-lg p-2">
+        <div className="bg-white/5 rounded-lg p-2">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-xs text-gray-400">Max activation:</span>
-            <span className="text-xs font-mono text-primary-400">{maxActivation.toFixed(2)}</span>
+            <span className="text-xs 2xl:text-sm text-gray-400">Max activation:</span>
+            <span className="text-xs 2xl:text-sm font-mono text-primary-400">{maxActivation.toFixed(2)}</span>
           </div>
           <div className="flex flex-wrap gap-0.5">
             {result.tokens.map((t, i) => (

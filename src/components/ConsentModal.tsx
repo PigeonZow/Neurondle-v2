@@ -21,7 +21,7 @@ export function ConsentModal() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-[10000] flex items-center justify-center bg-game-bg/85 backdrop-blur-md p-4"
+          className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
         >
           <motion.div
             initial={{ opacity: 0, y: 24, scale: 0.98 }}
@@ -55,7 +55,7 @@ export function ConsentModal() {
 
                 <div className="flex items-start gap-2 shrink-0">
                   <div className="text-right">
-                    <p className="text-[10px] uppercase tracking-[0.18em] text-gray-500 font-mono">
+                    <p className="text-[10px] uppercase tracking-[0.18em] text-gray-200 font-mono">
                       Study
                     </p>
                     <p className="text-xs font-mono text-gray-300 mt-0.5">
@@ -66,7 +66,7 @@ export function ConsentModal() {
                     <button
                       onClick={closeModal}
                       aria-label="Close"
-                      className="ml-2 w-7 h-7 rounded-md text-gray-500 hover:text-white hover:bg-white/5 transition-colors flex items-center justify-center"
+                      className="ml-2 w-7 h-7 rounded-md text-gray-500 hover:text-white hover:bg-white/5 transition-colors flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight"
                     >
                       <svg
                         width="14"
@@ -142,18 +142,18 @@ export function ConsentModal() {
                   </p>
 
                   <div className="mt-3">
-                    <p className="text-[11px] font-mono uppercase tracking-[0.18em] text-gray-400 mb-1.5">
+                    <p className="text-[11px] font-mono uppercase tracking-[0.18em] text-gray-200 mb-1.5">
                       Withdrawal reference
                     </p>
                     <div className="bg-game-bg rounded-lg border border-white/5 px-3 py-2.5 flex items-center justify-between gap-3">
                       <code className="text-xs font-mono text-primary-300 break-all">
                         {getSessionToken()}
                       </code>
-                      <span className="text-[10px] uppercase tracking-wider font-mono text-gray-500 shrink-0">
+                      <span className="text-[10px] uppercase tracking-wider font-mono text-gray-200 shrink-0">
                         session
                       </span>
                     </div>
-                    <p className="text-[11px] text-gray-500 mt-1.5">
+                    <p className="text-[11px] text-gray-400 mt-1.5">
                       This ID is also displayed in the bottom-right corner of the game for future reference.
                     </p>
                   </div>
@@ -215,7 +215,7 @@ export function ConsentModal() {
                       <ContactRow label="Office">SFU Research Ethics</ContactRow>
                       <ContactRow label="Email">hreb@sfu.ca</ContactRow>
                       <ContactRow label="Phone">778-782-6593</ContactRow>
-                      <p className="text-[11px] text-gray-500 mt-2 leading-snug">
+                      <p className="text-[11px] text-gray-400 mt-2 leading-snug">
                         Contact if you have concerns about your rights as a research participant.
                       </p>
                     </ContactCard>
@@ -233,7 +233,7 @@ export function ConsentModal() {
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <button
                   onClick={() => setConsentStatus('declined')}
-                  className="px-4 py-2 rounded-lg text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 transition-colors"
+                  className="px-4 py-2 rounded-lg text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight"
                 >
                   {alreadyDecided && consentStatus === 'accepted'
                     ? 'Opt out'
@@ -256,7 +256,7 @@ export function ConsentModal() {
                   <button
                     onClick={() => setConsentStatus('accepted')}
                     disabled={!checked}
-                    className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
+                    className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight ${
                       checked
                         ? 'bg-primary-600 hover:bg-primary-500 text-white shadow-[0_0_0_1px_rgba(96,165,250,0.3)]'
                         : 'bg-white/5 text-gray-600 cursor-not-allowed'
@@ -288,7 +288,7 @@ function Section({
   return (
     <section className="scroll-mt-4">
       <div className="flex items-baseline gap-3 mb-3">
-        <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-gray-500">
+        <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-gray-200">
           {num} <span className="text-gray-700">/</span> {label}
         </span>
       </div>
@@ -349,7 +349,7 @@ function ContactCard({
 }) {
   return (
     <div className="bg-game-bg/60 rounded-lg border border-white/5 p-3.5">
-      <p className="text-[10px] font-mono uppercase tracking-[0.16em] text-gray-500 mb-2">
+      <p className="text-[10px] font-mono uppercase tracking-[0.16em] text-gray-200 mb-2">
         {heading}
       </p>
       <div className="space-y-1 text-xs">{children}</div>
@@ -366,7 +366,7 @@ function ContactRow({
 }) {
   return (
     <div className="flex gap-2">
-      <span className="text-gray-500 w-12 shrink-0 font-mono text-[10px] uppercase tracking-wider pt-px">
+      <span className="text-gray-200 w-12 shrink-0 font-mono text-[10px] uppercase tracking-wider pt-px">
         {label}
       </span>
       <span className="text-gray-200">{children}</span>

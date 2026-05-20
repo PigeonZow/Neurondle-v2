@@ -1,40 +1,42 @@
 'use client'
 
-import { useGameStore, selectCurrentRound } from '@/lib/store/gameStore'
-import { formatScore } from '@/lib/services/scoring'
+import { useOnboardingStore } from '@/lib/store/onboardingStore'
+import { FeatureSearch } from './FeatureSearch'
+import type { UmapPoint } from '@/types'
 
-export function GameHeader() {
-  const currentRoundIndex = useGameStore(state => state.currentRound)
-  const totalScore = useGameStore(state => state.totalScore)
-  const rounds = useGameStore(state => state.rounds)
+interface GameHeaderProps {
+  umapData: UmapPoint[]
+  onFilterChange: (query: string) => void
+  onJumpToPoint: (point: UmapPoint) => void
+}
 
-  const roundNumber = currentRoundIndex + 1
-  const totalRounds = rounds.length || 3
+export function GameHeader({ umapData, onFilterChange, onJumpToPoint }: GameHeaderProps) {
+  const triggerReplay = useOnboardingStore(state => state.triggerReplay)
 
   return (
-    <header className="game-overlay fixed top-0 left-0 right-0 p-4">
-      <div className="flex items-center justify-between max-w-screen-xl mx-auto">
-        {/* Round indicator */}
-        <div className="bg-game-surface/80 backdrop-blur-sm rounded-lg px-4 py-2">
-          <span className="text-sm text-gray-400">Round</span>
-          <span className="ml-2 text-lg font-bold">
-            {roundNumber}/{totalRounds}
-          </span>
-        </div>
-
-        {/* Logo */}
-        <h1 className="text-xl font-bold tracking-tight">
+    <header className="game-overlay fixed top-0 inset-x-0 z-40 h-14 2xl:h-16 min-[1920px]:h-20 bg-game-surface/70 backdrop-blur-md border-b border-white/15 shadow-lg">
+      <div className="grid grid-cols-[auto_1fr_auto] items-center gap-6 px-6 2xl:px-8 h-full">
+        <h1 className="text-2xl 2xl:text-3xl font-bold tracking-tight">
           <span className="text-primary-400">Neuron</span>
           <span className="text-game-highlight">dle</span>
         </h1>
 
-        {/* Score */}
-        <div className="bg-game-surface/80 backdrop-blur-sm rounded-lg px-4 py-2">
-          <span className="text-sm text-gray-400">Score</span>
-          <span className="ml-2 text-lg font-bold text-primary-400">
-            {formatScore(totalScore)}
-          </span>
+        <div className="max-w-2xl 2xl:max-w-3xl min-[1920px]:max-w-4xl mx-auto w-full">
+          <FeatureSearch
+            data={umapData}
+            onFilterChange={onFilterChange}
+            onJumpToPoint={onJumpToPoint}
+          />
         </div>
+
+        <button
+          onClick={triggerReplay}
+          className="flex items-center gap-2 px-3 2xl:px-4 py-1.5 2xl:py-2 rounded-lg text-sm 2xl:text-base text-gray-300 hover:text-white hover:bg-white/5 border border-white/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight"
+          aria-label="Replay tutorial"
+        >
+          <span className="font-bold">?</span>
+          <span>Tutorial</span>
+        </button>
       </div>
     </header>
   )

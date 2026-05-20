@@ -1,120 +1,95 @@
 'use client'
 
-import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 import { useGameStore, selectCurrentRound, selectRevealedHints } from '@/lib/store/gameStore'
 import { TestInput } from './TestInput'
 import { HintPanel } from './HintPanel'
-import { ScoreReveal } from './ScoreReveal'
-import { FeatureSearch } from './FeatureSearch'
-import type { UmapPoint } from '@/types'
+import { formatScore } from '@/lib/services/scoring'
 
-interface GameControlsProps {
-  umapData: UmapPoint[]
-  onFilterChange: (query: string) => void
-  onJumpToPoint: (point: UmapPoint) => void
-}
-
-export function GameControls({ umapData, onFilterChange, onJumpToPoint }: GameControlsProps) {
-  const [expanded, setExpanded] = useState(true)
-
+export function GameControls() {
   const currentRound = useGameStore(selectCurrentRound)
   const revealedHints = useGameStore(selectRevealedHints)
   const lockIn = useGameStore(state => state.lockIn)
   const revealHint = useGameStore(state => state.revealHint)
-  const nextRound = useGameStore(state => state.nextRound)
+  const currentRoundIndex = useGameStore(state => state.currentRound)
+  const totalScore = useGameStore(state => state.totalScore)
+  const rounds = useGameStore(state => state.rounds)
 
   if (!currentRound) return null
 
   const { phase, pin, puzzle, hintsRevealed } = currentRound
   const canLockIn = pin && !currentRound.confirmed
   const totalHints = puzzle.hints.length
+  const totalRounds = rounds.length || 3
+
+  if (phase === 'complete') return null
 
   return (
-    <div className="game-overlay fixed bottom-0 left-0 right-0 p-4 pointer-events-none">
-      <div className="max-w-2xl mx-auto space-y-3 pointer-events-auto">
-        {/* Score reveal overlay */}
-        <AnimatePresence>
-          {phase === 'reveal' && currentRound.score !== null && (
-            <ScoreReveal
-              score={currentRound.score}
-              distance={currentRound.distance!}
-              groundTruth={puzzle.groundTruthLabel}
-              onContinue={nextRound}
-            />
-          )}
-        </AnimatePresence>
-
-        {/* Controls panel */}
-        {phase !== 'reveal' && phase !== 'complete' && (
-          <div className="relative">
-            {/* Collapse tab - folder style */}
-            <button
-              onClick={() => setExpanded(!expanded)}
-              className="absolute -top-7 left-4 px-3 py-1.5 bg-game-surface/70 hover:bg-game-surface/90 backdrop-blur-sm rounded-t-lg text-gray-400 hover:text-white transition-all border-t border-x border-white/10"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2.5}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className={`w-4 h-4 transition-transform ${expanded ? '' : 'rotate-180'}`}
-              >
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
-            </button>
-
-            <motion.div
-              initial={{ y: 100, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              className="bg-game-surface/90 backdrop-blur-sm rounded-xl p-3 space-y-3"
-            >
-              {/* Expandable content */}
-              {expanded && (
-                <div className="space-y-3">
-                  {/* Feature Search */}
-                  <FeatureSearch
-                    data={umapData}
-                    onFilterChange={onFilterChange}
-                    onJumpToPoint={onJumpToPoint}
-                  />
-
-                  {/* Hint panel */}
-                  <HintPanel
-                    hints={revealedHints}
-                    totalHints={totalHints}
-                    onRevealHint={revealHint}
-                    hintsRevealed={hintsRevealed}
-                  />
-                </div>
-              )}
-
-              {/* Test input */}
-              <TestInput />
-
-              {/* Guess button */}
-              <div className="flex justify-end">
-                <button
-                  onClick={lockIn}
-                  disabled={!canLockIn}
-                  className={`
-                    px-5 py-2 rounded-lg text-sm font-semibold transition-all
-                    ${canLockIn
-                      ? 'bg-game-highlight hover:bg-red-600 text-white'
-                      : 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                    }
-                  `}
+    <div className="game-overlay fixed left-4 top-20 2xl:top-24 min-[1920px]:top-28 bottom-4 flex items-center z-30 pointer-events-none">
+    <aside className="w-80 2xl:w-[28rem] min-[1920px]:w-[32rem] max-w-[calc(100vw-2rem)] max-h-full flex flex-col bg-game-surface/70 backdrop-blur-md rounded-2xl border border-white/15 shadow-2xl overflow-hidden pointer-events-auto">
+      {/* HUD: Round + Score on one line */}
+      <div className="shrink-0 px-5 2xl:px-6 py-4 2xl:py-6 border-b border-white/10 flex items-center justify-between gap-4">
+        <div>
+          <p className="text-[10px] 2xl:text-xs uppercase tracking-widest text-gray-200 mb-1">Round</p>
+          <div className="flex items-center gap-1.5">
+            {Array.from({ length: totalRounds }).map((_, i) => {
+              const isPast = i < currentRoundIndex
+              const isCurrent = i === currentRoundIndex
+              const cls = isPast
+                ? 'bg-primary-400 text-white'
+                : isCurrent
+                  ? 'border-2 border-primary-400 text-white bg-primary-400/10'
+                  : 'bg-white/10 text-gray-500'
+              return (
+                <div
+                  key={i}
+                  className={`w-7 h-7 2xl:w-8 2xl:h-8 rounded-full flex items-center justify-center text-sm 2xl:text-base font-bold tabular-nums ${cls}`}
                 >
-                  Guess
-                </button>
-              </div>
-            </motion.div>
+                  {i + 1}
+                </div>
+              )
+            })}
           </div>
-        )}
+        </div>
+        <div className="text-right">
+          <p className="text-[10px] 2xl:text-xs uppercase tracking-widest text-gray-200 mb-1">Score</p>
+          <p className="text-2xl 2xl:text-3xl font-bold text-primary-400 tabular-nums">
+            {formatScore(totalScore)}
+          </p>
+        </div>
       </div>
+
+      {/* Hints — fixed height, hint cards scroll internally */}
+      <div className="shrink-0 px-5 2xl:px-6 py-4 border-b border-white/10">
+        <HintPanel
+          hints={revealedHints}
+          totalHints={totalHints}
+          onRevealHint={revealHint}
+          hintsRevealed={hintsRevealed}
+        />
+      </div>
+
+      {/* Test input */}
+      <div className="shrink-0 px-5 2xl:px-6 py-4 border-b border-white/10 space-y-3">
+        <p className="text-[10px] 2xl:text-xs uppercase tracking-widest text-gray-200">Test your theory</p>
+        <TestInput />
+      </div>
+
+      {/* Lock-in button */}
+      <div className="shrink-0 px-5 2xl:px-6 py-4 2xl:py-5">
+        <button
+          data-onboarding="lock-in-button"
+          onClick={lockIn}
+          disabled={!canLockIn}
+          className={`w-full py-2.5 2xl:py-3.5 rounded-xl text-sm 2xl:text-lg font-bold tracking-wide transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight
+            ${canLockIn
+              ? 'bg-game-highlight hover:bg-red-600 text-white shadow-[0_0_20px_rgba(233,69,96,0.4)]'
+              : 'border border-gray-600 text-gray-500 cursor-not-allowed'
+            }`}
+        >
+          Lock In Answer
+        </button>
+      </div>
+    </aside>
     </div>
   )
 }

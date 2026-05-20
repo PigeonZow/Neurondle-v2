@@ -15,16 +15,16 @@ export function HintPanel({ hints, totalHints, hintsRevealed, onRevealHint }: Hi
   const canRevealMore = hintsRevealed < totalHints
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3" data-onboarding="hint-panel">
       <div className="flex items-center justify-between">
-        <span className="text-xs text-gray-400">
+        <span className="text-[10px] 2xl:text-xs uppercase tracking-widest text-gray-200">
           Hints ({hintsRevealed}/{totalHints})
         </span>
         <button
           onClick={onRevealHint}
           disabled={!canRevealMore}
           className={`
-            text-xs px-2 py-0.5 rounded transition-colors
+            text-xs 2xl:text-sm px-2 2xl:px-2.5 py-0.5 2xl:py-1 rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight
             ${canRevealMore
               ? 'bg-primary-600/20 text-primary-400 hover:bg-primary-600/30'
               : 'text-gray-600 cursor-not-allowed'
@@ -35,19 +35,20 @@ export function HintPanel({ hints, totalHints, hintsRevealed, onRevealHint }: Hi
         </button>
       </div>
 
-      <div className="space-y-1.5 max-h-36 overflow-y-auto">
-        <AnimatePresence>
-          {hints.map((hint, index) => (
+      <div className="space-y-1.5 h-52 2xl:h-96 overflow-y-auto pr-1">
+        <AnimatePresence initial={false}>
+          {[...hints].reverse().map((hint) => (
             <motion.div
               key={hint.id}
-              initial={{ opacity: 0, y: -10 }}
+              layout
+              initial={{ opacity: 0, y: -16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="bg-game-bg rounded-lg p-2"
+              transition={{ type: 'spring', stiffness: 320, damping: 30 }}
+              className="bg-white/5 rounded-lg p-2"
             >
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs text-gray-500">Hint {hint.level}</span>
-                <span className="text-xs font-mono text-primary-400">
+                <span className="text-xs 2xl:text-sm text-gray-400">Hint {hint.level}</span>
+                <span className="text-xs 2xl:text-sm font-mono text-gray-300">
                   {hint.score.toFixed(1)}
                 </span>
               </div>
