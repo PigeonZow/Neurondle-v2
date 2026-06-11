@@ -9,7 +9,8 @@
     "lint": "next lint",
     "sync-explanations": "npx tsx scripts/syncExplanations.ts",
     "generate-puzzles": "npx tsx scripts/generateDailyPuzzles.ts",
-    "cache-umap": "npx tsx scripts/cacheUmapData.ts"
+    "cache-umap": "npx tsx scripts/cacheUmapData.ts",
+    "inspect-session": "npx tsx scripts/inspectSession.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",

@@ -11,6 +11,8 @@ export function TestInput() {
   const [result, setResult] = useState<ActivationTest | null>(null)
 
   const currentRound = useGameStore(selectCurrentRound)
+  const sessionId = useGameStore(state => state.sessionId)
+  const gameId = useGameStore(state => state.gameId)
   const addActivationTest = useGameStore(state => state.addActivationTest)
 
   if (!currentRound) return null
@@ -28,6 +30,12 @@ export function TestInput() {
           layer: currentRound.puzzle.layer,
           featureIndex: currentRound.puzzle.featureIndex,
           text: text.trim(),
+          // Context for research logging (metadata only — the route never
+          // stores the raw text). Skipped server-side for mock puzzles.
+          sessionId,
+          gameId,
+          puzzleId: currentRound.puzzle.id,
+          roundNumber: currentRound.puzzle.roundNumber,
         }),
       })
 

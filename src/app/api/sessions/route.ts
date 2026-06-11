@@ -77,15 +77,20 @@ export async function POST(request: NextRequest) {
     const supabase = createServerClient()
     const today = getTodayDate()
 
+    // Partial update: only touch fields the caller actually sent, so a
+    // consent-only update doesn't clobber gameplay progress (and vice versa).
+    const updates: Record<string, unknown> = {
+      updated_at: new Date().toISOString(),
+    }
+    if (body.currentRound !== undefined) updates.current_round = body.currentRound
+    if (body.totalScore !== undefined) updates.total_score = body.totalScore
+    if (body.completed !== undefined) updates.completed = body.completed
+    if (body.researchConsent !== undefined)
+      updates.research_consent = body.researchConsent
+
     const { error } = await supabase
       .from('sessions')
-      .update({
-        current_round: body.currentRound,
-        total_score: body.totalScore,
-        completed: body.completed,
-        research_consent: body.researchConsent,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updates)
       .eq('session_token', sessionToken)
       .eq('date', today)
 

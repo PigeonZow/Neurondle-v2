@@ -70,6 +70,10 @@ CREATE TABLE IF NOT EXISTS round_attempts (
   puzzle_id UUID REFERENCES puzzles(id),
   round_number INTEGER NOT NULL,
 
+  -- Groups all rounds of one playthrough (a user may play multiple games
+  -- per session). Generated client-side at game start; no FK on purpose.
+  game_id UUID,
+
   pin_x FLOAT NOT NULL,
   pin_y FLOAT NOT NULL,
 
@@ -80,15 +84,21 @@ CREATE TABLE IF NOT EXISTS round_attempts (
 );
 
 CREATE INDEX IF NOT EXISTS idx_round_attempts_session ON round_attempts(session_id);
+CREATE INDEX IF NOT EXISTS idx_round_attempts_game ON round_attempts(game_id);
 
 -- Activation Tests Table (research data)
+-- NOTE: We intentionally do NOT store the user's raw custom text (text_input).
+-- The consent modal explicitly promises raw text inputs are never collected, so
+-- we persist only metadata (length / token count / activations).
 CREATE TABLE IF NOT EXISTS activation_tests (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   session_id UUID REFERENCES sessions(id) ON DELETE CASCADE,
   puzzle_id UUID REFERENCES puzzles(id),
   round_number INTEGER NOT NULL,
 
-  text_input TEXT,
+  -- Same per-playthrough grouping id as round_attempts.game_id.
+  game_id UUID,
+
   text_length INTEGER NOT NULL,
   max_activation FLOAT NOT NULL,
   token_count INTEGER NOT NULL,
@@ -100,6 +110,7 @@ CREATE TABLE IF NOT EXISTS activation_tests (
 
 CREATE INDEX IF NOT EXISTS idx_activation_tests_session ON activation_tests(session_id);
 CREATE INDEX IF NOT EXISTS idx_activation_tests_puzzle ON activation_tests(puzzle_id);
+CREATE INDEX IF NOT EXISTS idx_activation_tests_game ON activation_tests(game_id);
 
 -- Used Features Table (prevents repetition)
 CREATE TABLE IF NOT EXISTS used_features (
