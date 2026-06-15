@@ -86,18 +86,11 @@ export interface SAEConfig {
   layer: string // e.g., "12-gemmascope-res-16k"
   maxFeatures: number // e.g., 16384
   displayName: string
+  enabled: boolean // false = known but not usable for live play
 }
 
-// Available SAE configurations (using 16K layer for now - 65K layers don't have UMAP data yet)
-export const SAE_CONFIGS: SAEConfig[] = [
-  {
-    id: 'gemma_res_12_16k',
-    modelId: 'gemma-2-2b',
-    layer: '12-gemmascope-res-16k',
-    maxFeatures: 16384,
-    displayName: 'Gemma 2 2B - Layer 12 (16K)',
-  },
-]
+// SAE definitions live in src/config/saes.ts (single source of truth).
+// Import { SAES, activeSae, findSae, ... } from '@/config/saes'.
 
 // === Session ===
 

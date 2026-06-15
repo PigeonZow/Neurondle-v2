@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-
-const SAE_CONFIGS = [
-  { id: 'gemma_res_12_16k', modelId: 'gemma-2-2b', layer: '12-gemmascope-res-16k', maxFeatures: 16384 },
-]
+import { activeSae, NEURONPEDIA, neuronpediaHeaders } from '@/config/saes'
 
 const MIN_QUALITY = parseFloat(process.env.MIN_EXPLANATION_SCORE || '0')
 
@@ -59,14 +56,11 @@ export async function GET(request: NextRequest) {
   const usedFeatures = new Set<string>(usedData?.feature_keys || [])
 
   // Get UMAP data for coordinate lookup
-  const saeConfig = SAE_CONFIGS[0]
-  const headers: HeadersInit = { 'Content-Type': 'application/json' }
-  if (process.env.NEURONPEDIA_API_KEY) {
-    headers['X-API-Key'] = process.env.NEURONPEDIA_API_KEY
-  }
+  const saeConfig = activeSae()
+  const headers = neuronpediaHeaders()
 
-  console.log('Fetching UMAP data...')
-  const umapResponse = await fetch('https://www.neuronpedia.org/api/umap', {
+  console.log(`Fetching UMAP data for ${saeConfig.id}...`)
+  const umapResponse = await fetch(`${NEURONPEDIA.baseUrl}/umap`, {
     method: 'POST',
     headers,
     body: JSON.stringify({ modelId: saeConfig.modelId, layers: [saeConfig.layer] }),
@@ -108,7 +102,7 @@ export async function GET(request: NextRequest) {
       try {
         // Get feature data
         const featureResponse = await fetch(
-          `https://www.neuronpedia.org/api/feature/${saeConfig.modelId}/${saeConfig.layer}/${featureIndex}`,
+          `${NEURONPEDIA.baseUrl}/feature/${saeConfig.modelId}/${saeConfig.layer}/${featureIndex}`,
           { headers }
         )
 

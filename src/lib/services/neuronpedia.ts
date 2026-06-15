@@ -5,24 +5,10 @@ import type {
   UmapPoint,
   NeuronpediaActivation,
 } from '@/types'
+import { NEURONPEDIA, neuronpediaHeaders } from '@/config/saes'
 
-const BASE_URL = 'https://www.neuronpedia.org/api'
-
-/**
- * Get optional API key from environment
- */
-function getHeaders(): HeadersInit {
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-  }
-
-  const apiKey = process.env.NEURONPEDIA_API_KEY
-  if (apiKey) {
-    headers['X-API-Key'] = apiKey
-  }
-
-  return headers
-}
+const BASE_URL = NEURONPEDIA.baseUrl
+const getHeaders = neuronpediaHeaders
 
 /**
  * Test custom text activation for a specific feature

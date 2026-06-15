@@ -1,12 +1,8 @@
 import { config } from 'dotenv'
 config({ path: '.env.local' })
+config({ path: '.env' })
 import { createClient } from '@supabase/supabase-js'
-
-const SAE_CONFIGS = [
-  { modelId: 'gemma-2-2b', layer: '12-gemmascope-res-16k' },
-  { modelId: 'gemma-2-2b', layer: '25-gemmascope-res-65k' },
-  { modelId: 'gemma-2-2b', layer: '15-gemmascope-mlp-65k' },
-]
+import { allSaes, NEURONPEDIA, neuronpediaHeaders } from '../src/config/saes'
 
 async function syncExplanations() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -20,17 +16,14 @@ async function syncExplanations() {
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-  for (const config of SAE_CONFIGS) {
+  const headers = neuronpediaHeaders()
+
+  for (const config of allSaes()) {
     console.log(`Syncing ${config.modelId}/${config.layer}...`)
 
     // Download from Neuronpedia
-    const headers: HeadersInit = { 'Content-Type': 'application/json' }
-    if (process.env.NEURONPEDIA_API_KEY) {
-      headers['X-API-Key'] = process.env.NEURONPEDIA_API_KEY
-    }
-
     const response = await fetch(
-      `https://www.neuronpedia.org/api/explanation/export?modelId=${config.modelId}&saeId=${config.layer}`,
+      `${NEURONPEDIA.baseUrl}/explanation/export?modelId=${config.modelId}&saeId=${config.layer}`,
       { headers }
     )
 

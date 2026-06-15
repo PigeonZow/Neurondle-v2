@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { promises as fs } from 'fs'
 import path from 'path'
 import { getUmapData } from '@/lib/services/neuronpedia'
-import { SAE_CONFIGS } from '@/types'
+import { activeSae } from '@/config/saes'
 import type { UmapPoint } from '@/types'
 
 // Cache UMAP data in memory (it's static)
@@ -15,7 +15,7 @@ export async function GET() {
       return NextResponse.json(cachedUmapData)
     }
 
-    const config = SAE_CONFIGS[0]
+    const config = activeSae()
 
     // Try to load from cached file first
     try {

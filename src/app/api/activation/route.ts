@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { testActivation, filterBosToken } from '@/lib/services/neuronpedia'
-import { SAE_CONFIGS } from '@/types'
+import { findSae } from '@/config/saes'
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Find matching SAE config
-    const config = SAE_CONFIGS.find(c => c.modelId === modelId && c.layer === layer)
+    const config = findSae(modelId, layer)
     if (!config) {
       return NextResponse.json(
         { error: 'Invalid model/layer combination' },
