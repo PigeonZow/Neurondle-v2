@@ -30,8 +30,8 @@ export function TestInput() {
           layer: currentRound.puzzle.layer,
           featureIndex: currentRound.puzzle.featureIndex,
           text: text.trim(),
-          // Context for research logging (metadata only — the route never
-          // stores the raw text). Skipped server-side for mock puzzles.
+          // Context for research logging (the route stores this text along with
+          // the metadata). Skipped server-side for mock puzzles.
           sessionId,
           gameId,
           puzzleId: currentRound.puzzle.id,

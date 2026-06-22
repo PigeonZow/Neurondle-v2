@@ -30,13 +30,12 @@ export async function POST(request: NextRequest) {
     // Filter out BOS token
     const filtered = filterBosToken(response)
 
-    // Persist research metadata for this probe. We collect this for EVERY run;
+    // Persist research data for this probe. We collect this for EVERY run;
     // whether it's usable for research is decided later via the session's
     // research_consent flag (rows join back to sessions via session_id).
     //
-    // PRIVACY: we deliberately never store the raw text or the token strings
-    // (which would let the text be reconstructed). Only counts and the numeric
-    // activation values per token position are stored.
+    // We store the raw custom text the user entered (text_input) along with the
+    // metadata and the numeric activation values per token position.
     if (sessionId && puzzleId && roundNumber && !String(puzzleId).startsWith('mock')) {
       try {
         const supabase = createServerClient()
@@ -45,6 +44,7 @@ export async function POST(request: NextRequest) {
           puzzle_id: puzzleId,
           round_number: roundNumber,
           game_id: gameId ?? null,
+          text_input: typeof text === 'string' ? text : null,
           text_length: typeof text === 'string' ? text.length : 0,
           token_count: filtered.tokens.length,
           max_activation: filtered.maxValue,

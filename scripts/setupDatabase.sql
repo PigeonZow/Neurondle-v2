@@ -87,9 +87,8 @@ CREATE INDEX IF NOT EXISTS idx_round_attempts_session ON round_attempts(session_
 CREATE INDEX IF NOT EXISTS idx_round_attempts_game ON round_attempts(game_id);
 
 -- Activation Tests Table (research data)
--- NOTE: We intentionally do NOT store the user's raw custom text (text_input).
--- The consent modal explicitly promises raw text inputs are never collected, so
--- we persist only metadata (length / token count / activations).
+-- We store the user's raw custom text (text_input) along with metadata
+-- (length / token count / activations) for research use.
 CREATE TABLE IF NOT EXISTS activation_tests (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   session_id UUID REFERENCES sessions(id) ON DELETE CASCADE,
@@ -99,6 +98,7 @@ CREATE TABLE IF NOT EXISTS activation_tests (
   -- Same per-playthrough grouping id as round_attempts.game_id.
   game_id UUID,
 
+  text_input TEXT,
   text_length INTEGER NOT NULL,
   max_activation FLOAT NOT NULL,
   token_count INTEGER NOT NULL,
