@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useGameStore, selectCurrentRound } from '@/lib/store/gameStore'
 import { TokenWithTooltip } from '@/components/ui/TokenWithTooltip'
 import type { ActivationTest, TokenActivation } from '@/types'
@@ -14,6 +14,14 @@ export function TestInput() {
   const sessionId = useGameStore(state => state.sessionId)
   const gameId = useGameStore(state => state.gameId)
   const addActivationTest = useGameStore(state => state.addActivationTest)
+
+  // Reset the input and last result when the round changes — a previous round's
+  // activation is irrelevant to the new puzzle.
+  const puzzleId = currentRound?.puzzle.id
+  useEffect(() => {
+    setText('')
+    setResult(null)
+  }, [puzzleId])
 
   if (!currentRound) return null
 
@@ -56,6 +64,7 @@ export function TestInput() {
 
       setResult(test)
       addActivationTest(test)
+      setText('')
     } catch (error) {
       console.error('Activation test error:', error)
     } finally {
