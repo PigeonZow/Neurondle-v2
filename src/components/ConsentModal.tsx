@@ -102,7 +102,7 @@ export function ConsentModal() {
                     <span className="text-white font-medium">
                       The game functions identically whether you participate in research or not.
                     </span>{' '}
-                    Your choice only affects whether we collect anonymized data about your gameplay. This consent dialog will take &lt; 2 minutes to read.
+                    Your choice only affects whether we collect anonymous data about your gameplay. This consent dialog will take &lt; 2 minutes to read.
                   </Callout>
                 </Section>
 
@@ -114,7 +114,7 @@ export function ConsentModal() {
                   </p>
                   <Heading className="mt-4">What would happen if you participate?</Heading>
                   <p>
-                    If you choose to participate, we will collect anonymized data about
+                    If you choose to participate, we will collect anonymous data about
                     your gameplay as you normally use Neurondle, which also may be used in research publications and student theses. A game of Neurondle takes anywhere from 1 to 15 minutes, depending on your number of guesses.
                   </p>
                 </Section>
@@ -138,7 +138,7 @@ export function ConsentModal() {
 
                   <Heading className="mt-4">How can you withdraw your data?</Heading>
                   <p>
-                    You can withdraw your data by contacting the research team (information on final page), but after the data is anonymized and uploaded to research data sharing platforms it may not be possible to remove it from other systems that have already accessed it.
+                    You can withdraw your data by contacting the research team (information on final page), but after the data is anonymous and uploaded to research data sharing platforms it may not be possible to remove it from other systems that have already accessed it.
                   </p>
 
                   <div className="mt-3">
@@ -168,7 +168,7 @@ export function ConsentModal() {
                   </ul>
                   <Heading className="mt-4">Data storage and retention</Heading>
                   <p>
-                    Anonymized data will be made available in open research repositories indefinitely.
+                    Anonymous data will be made available in open research repositories indefinitely.
                   </p>
                 </Section>
 
@@ -177,7 +177,7 @@ export function ConsentModal() {
                   <Heading>Are there any risks?</Heading>
                   <p>
                     There are no foreseeable risks beyond those of normal computer use.
-                    The research involves only passive collection of anonymized gameplay data.
+                    The research involves only passive collection of anonymous gameplay data.
                   </p>
                   <Heading className="mt-4">Are there any benefits?</Heading>
                   <p>
