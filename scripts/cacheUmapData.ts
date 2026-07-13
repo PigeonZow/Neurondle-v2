@@ -1,14 +1,10 @@
 import { config } from 'dotenv'
 config({ path: '.env.local' })
+config({ path: '.env' })
 import { createClient } from '@supabase/supabase-js'
 import * as fs from 'fs'
 import * as path from 'path'
-
-const SAE_CONFIGS = [
-  { id: 'gemma_res_12_16k', modelId: 'gemma-2-2b', layer: '12-gemmascope-res-16k' },
-  { id: 'gemma_res_25_65k', modelId: 'gemma-2-2b', layer: '25-gemmascope-res-65k' },
-  { id: 'gemma_mlp_15_65k', modelId: 'gemma-2-2b', layer: '15-gemmascope-mlp-65k' },
-]
+import { allSaes, NEURONPEDIA, neuronpediaHeaders } from '../src/config/saes'
 
 async function cacheUmapData() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -20,15 +16,12 @@ async function cacheUmapData() {
     fs.mkdirSync(cacheDir, { recursive: true })
   }
 
-  const headers: HeadersInit = { 'Content-Type': 'application/json' }
-  if (process.env.NEURONPEDIA_API_KEY) {
-    headers['X-API-Key'] = process.env.NEURONPEDIA_API_KEY
-  }
+  const headers = neuronpediaHeaders()
 
-  for (const config of SAE_CONFIGS) {
+  for (const config of allSaes()) {
     console.log(`Caching UMAP data for ${config.layer}...`)
 
-    const response = await fetch('https://www.neuronpedia.org/api/umap', {
+    const response = await fetch(`${NEURONPEDIA.baseUrl}/umap`, {
       method: 'POST',
       headers,
       body: JSON.stringify({ modelId: config.modelId, layers: [config.layer] }),

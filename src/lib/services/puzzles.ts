@@ -1,5 +1,5 @@
 import type { Puzzle, Hint, SAEConfig, NeuronpediaActivation, TokenActivation } from '@/types'
-import { SAE_CONFIGS } from '@/types'
+import { activeSae } from '@/config/saes'
 import * as neuronpedia from './neuronpedia'
 
 /**
@@ -45,11 +45,10 @@ export function generateHints(
 }
 
 /**
- * Get a random SAE configuration
+ * Get the SAE configuration to generate puzzles from (the active SAE).
  */
 export function getRandomSAEConfig(): SAEConfig {
-  const index = Math.floor(Math.random() * SAE_CONFIGS.length)
-  return SAE_CONFIGS[index]
+  return activeSae()
 }
 
 /**
