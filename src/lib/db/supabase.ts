@@ -81,6 +81,7 @@ export interface Database {
           session_id: string
           puzzle_id: string
           round_number: number
+          game_id: string | null
           pin_x: number
           pin_y: number
           distance: number
@@ -96,7 +97,7 @@ export interface Database {
           session_id: string
           puzzle_id: string
           round_number: number
-          text_input: string | null
+          game_id: string | null
           text_length: number
           max_activation: number
           token_count: number

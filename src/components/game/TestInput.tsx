@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useGameStore, selectCurrentRound } from '@/lib/store/gameStore'
 import { TokenWithTooltip } from '@/components/ui/TokenWithTooltip'
 import type { ActivationTest, TokenActivation } from '@/types'
@@ -11,7 +11,17 @@ export function TestInput() {
   const [result, setResult] = useState<ActivationTest | null>(null)
 
   const currentRound = useGameStore(selectCurrentRound)
+  const sessionId = useGameStore(state => state.sessionId)
+  const gameId = useGameStore(state => state.gameId)
   const addActivationTest = useGameStore(state => state.addActivationTest)
+
+  // Reset the input and last result when the round changes — a previous round's
+  // activation is irrelevant to the new puzzle.
+  const puzzleId = currentRound?.puzzle.id
+  useEffect(() => {
+    setText('')
+    setResult(null)
+  }, [puzzleId])
 
   if (!currentRound) return null
 
@@ -28,6 +38,12 @@ export function TestInput() {
           layer: currentRound.puzzle.layer,
           featureIndex: currentRound.puzzle.featureIndex,
           text: text.trim(),
+          // Context for research logging (the route stores this text along with
+          // the metadata). Skipped server-side for mock puzzles.
+          sessionId,
+          gameId,
+          puzzleId: currentRound.puzzle.id,
+          roundNumber: currentRound.puzzle.roundNumber,
         }),
       })
 
@@ -48,6 +64,7 @@ export function TestInput() {
 
       setResult(test)
       addActivationTest(test)
+      setText('')
     } catch (error) {
       console.error('Activation test error:', error)
     } finally {

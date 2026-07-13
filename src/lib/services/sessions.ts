@@ -67,3 +67,103 @@ export function setResearchConsent(consent: boolean): void {
   }
   localStorage.setItem('neurondle_research_consent', String(consent))
 }
+
+// === Backend persistence ===
+//
+// We collect gameplay data for EVERY run. The `research_consent` flag on the
+// session row is the single label that determines whether a run is usable for
+// research later — child rows (round_attempts, activation_tests) inherit it via
+// their session_id join. All writes here are best-effort: a failed write must
+// never break gameplay.
+
+interface SessionRow {
+  id: string
+  research_consent: boolean
+  current_round: number
+  total_score: number
+  completed: boolean
+}
+
+function sessionHeaders(): HeadersInit {
+  return {
+    'Content-Type': 'application/json',
+    'x-session-token': getSessionToken(),
+  }
+}
+
+/**
+ * Get-or-create today's session row for this browser. Returns the row
+ * (including its `id`, needed to link round/activation data), or null on error.
+ */
+export async function ensureSession(): Promise<SessionRow | null> {
+  try {
+    const res = await fetch('/api/sessions', {
+      headers: { 'x-session-token': getSessionToken() },
+    })
+    if (!res.ok) return null
+    return (await res.json()) as SessionRow
+  } catch (error) {
+    console.error('ensureSession failed:', error)
+    return null
+  }
+}
+
+/**
+ * Persist the research-consent flag to the session. Ensures the session row
+ * exists first so an early opt-in/opt-out isn't lost.
+ */
+export async function persistSessionConsent(consent: boolean): Promise<void> {
+  try {
+    await ensureSession()
+    await fetch('/api/sessions', {
+      method: 'POST',
+      headers: sessionHeaders(),
+      body: JSON.stringify({ researchConsent: consent }),
+    })
+  } catch (error) {
+    console.error('persistSessionConsent failed:', error)
+  }
+}
+
+/**
+ * Update the session-level aggregates (running score, current round, completion).
+ */
+export async function persistSessionProgress(input: {
+  currentRound?: number
+  totalScore?: number
+  completed?: boolean
+}): Promise<void> {
+  try {
+    await fetch('/api/sessions', {
+      method: 'POST',
+      headers: sessionHeaders(),
+      body: JSON.stringify(input),
+    })
+  } catch (error) {
+    console.error('persistSessionProgress failed:', error)
+  }
+}
+
+/**
+ * Record a single locked-in guess.
+ */
+export async function persistRoundAttempt(input: {
+  sessionId: string
+  gameId: string | null
+  puzzleId: string
+  roundNumber: number
+  pinX: number
+  pinY: number
+  distance: number
+  score: number
+}): Promise<void> {
+  try {
+    await fetch('/api/rounds', {
+      method: 'POST',
+      headers: sessionHeaders(),
+      body: JSON.stringify(input),
+    })
+  } catch (error) {
+    console.error('persistRoundAttempt failed:', error)
+  }
+}

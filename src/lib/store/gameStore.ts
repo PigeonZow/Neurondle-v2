@@ -1,10 +1,16 @@
 import { create } from 'zustand'
 import type { GameState, RoundState, Puzzle, Point, ActivationTest } from '@/types'
 import { calculateDistance, calculateScore } from '@/lib/services/scoring'
+import { persistRoundAttempt, persistSessionProgress } from '@/lib/services/sessions'
 
 interface GameStore extends GameState {
+  // Backend session id for this run (null until ensureSession resolves)
+  sessionId: string | null
+  // Unique id for this single playthrough; groups its rounds + activation tests
+  gameId: string | null
   // Actions
   initGame: (puzzles: Puzzle[]) => void
+  setSessionId: (id: string | null) => void
   setPin: (point: Point) => void
   lockIn: () => void
   revealHint: () => void
@@ -30,6 +36,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
   currentRound: 0,
   rounds: [],
   totalScore: 0,
+  sessionId: null,
+  gameId: null,
 
   // Initialize game with today's puzzles
   initGame: (puzzles) => {
@@ -38,8 +46,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
       currentRound: 0,
       rounds: puzzles.map(initialRoundState),
       totalScore: 0,
+      // New playthrough → new game id (groups this game's rows together)
+      gameId: crypto.randomUUID(),
     })
   },
+
+  // Store the backend session id once it resolves
+  setSessionId: (id) => set({ sessionId: id }),
 
   // Place or move pin
   setPin: (point) => {
@@ -60,7 +73,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   // Lock in guess and calculate score
   lockIn: () => {
-    const { currentRound, rounds, totalScore } = get()
+    const { currentRound, rounds, totalScore, sessionId, gameId } = get()
     const round = rounds[currentRound]
 
     if (!round || !round.pin || round.confirmed) return
@@ -80,10 +93,31 @@ export const useGameStore = create<GameStore>((set, get) => ({
       score,
     }
 
+    const newTotalScore = totalScore + score
     set({
       rounds: updatedRounds,
-      totalScore: totalScore + score,
+      totalScore: newTotalScore,
     })
+
+    // Persist this guess (best-effort). Skip mock puzzles, whose ids aren't
+    // real rows in the puzzles table and would fail the foreign key.
+    if (sessionId && !round.puzzle.id.startsWith('mock')) {
+      void persistRoundAttempt({
+        sessionId,
+        gameId,
+        puzzleId: round.puzzle.id,
+        roundNumber: round.puzzle.roundNumber,
+        pinX: round.pin.x,
+        pinY: round.pin.y,
+        distance,
+        score,
+      })
+      // Keep the session-level running total / current round in sync.
+      void persistSessionProgress({
+        currentRound: round.puzzle.roundNumber,
+        totalScore: newTotalScore,
+      })
+    }
   },
 
   // Reveal next hint
@@ -123,7 +157,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   // Move to next round
   nextRound: () => {
-    const { currentRound, rounds } = get()
+    const { currentRound, rounds, totalScore, sessionId } = get()
     const round = rounds[currentRound]
 
     if (!round) return
@@ -144,6 +178,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
       })
     } else {
       set({ rounds: updatedRounds })
+
+      // Final round wrapped up — flag the session complete with its final score.
+      if (sessionId) {
+        void persistSessionProgress({ totalScore, completed: true })
+      }
     }
   },
 
@@ -154,6 +193,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       currentRound: 0,
       rounds: [],
       totalScore: 0,
+      gameId: null,
     })
   },
 }))

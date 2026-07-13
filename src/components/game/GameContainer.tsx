@@ -11,6 +11,8 @@ import { ScoreReveal } from './ScoreReveal'
 import { ConsentModal } from '@/components/ConsentModal'
 import { ConsentBadge } from '@/components/ConsentBadge'
 import { OnboardingFlow } from '@/components/OnboardingFlow'
+import { useConsentStore } from '@/lib/store/consentStore'
+import { ensureSession, persistSessionConsent } from '@/lib/services/sessions'
 import type { Puzzle, UmapPoint } from '@/types'
 
 export function GameContainer() {
@@ -22,6 +24,7 @@ export function GameContainer() {
   const umapRef = useRef<UmapCanvasRef>(null)
 
   const initGame = useGameStore(state => state.initGame)
+  const setSessionId = useGameStore(state => state.setSessionId)
   const currentRound = useGameStore(selectCurrentRound)
   const currentRoundIndex = useGameStore(state => state.currentRound)
   const isGameComplete = useGameStore(selectIsGameComplete)
@@ -46,13 +49,20 @@ export function GameContainer() {
         setUmapData(umap)
         initGame(puzzles)
         setLoading(false)
+
+        // Get-or-create the backend session, then sync the current consent
+        // choice (handles returning users whose consent is already decided).
+        const session = await ensureSession()
+        if (session?.id) setSessionId(session.id)
+        const consentStatus = useConsentStore.getState().consentStatus
+        void persistSessionConsent(consentStatus === 'accepted')
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error')
         setLoading(false)
       }
     }
     loadGame()
-  }, [initGame])
+  }, [initGame, setSessionId])
 
   const handleJumpToPoint = useCallback((point: UmapPoint) => {
     umapRef.current?.centerOnPoint({ x: point.x, y: point.y })
