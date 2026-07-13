@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { testActivation, filterBosToken } from '@/lib/services/neuronpedia'
 import { findSae } from '@/config/saes'
 import { createServerClient } from '@/lib/db/supabase'
-import { SAE_CONFIGS } from '@/types'
 
 export async function POST(request: NextRequest) {
   try {
