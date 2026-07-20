@@ -398,7 +398,7 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
       viewport.on('zoomed-end', updateScalesOnZoom)
       updateScalesOnZoom()
 
-      // Shared by free-placement clicks and the inspector's "Pin this neuron"
+      // Shared by free-placement clicks and the inspector's "Select this neuron"
       const placePinAt = (umapX: number, umapY: number) => {
         const sx = umapX * scale + offsetX
         const sy = umapY * scale + offsetY
