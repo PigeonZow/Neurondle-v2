@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGameStore, selectCurrentRound, selectIsGameComplete } from '@/lib/store/gameStore'
 import { UmapCanvas, UmapCanvasRef } from './UmapCanvas'
+import { NeuronInspector } from './NeuronInspector'
 import { GameHeader } from './GameHeader'
 import { GameControls } from './GameControls'
 import { ResultsOverlay } from './ResultsOverlay'
@@ -21,6 +22,7 @@ export function GameContainer() {
   const [umapData, setUmapData] = useState<UmapPoint[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [matchCursor, setMatchCursor] = useState(-1)
+  const [inspected, setInspected] = useState<UmapPoint | null>(null)
 
   const umapRef = useRef<UmapCanvasRef>(null)
 
@@ -91,6 +93,19 @@ export function GameContainer() {
     umapRef.current?.showPointLabel(null)
   }, [])
 
+  // Close the inspector when the round changes
+  useEffect(() => { setInspected(null) }, [currentRoundIndex])
+
+  const handleInspectorAnchor = useCallback(
+    () => (inspected ? umapRef.current?.getScreenPos(inspected) ?? null : null),
+    [inspected]
+  )
+
+  const handleInspectorPin = useCallback((point: UmapPoint) => {
+    umapRef.current?.pinAtPoint({ x: point.x, y: point.y })
+    setInspected(null)
+  }, [])
+
   const handleJumpToMatch = useCallback((direction: 1 | -1) => {
     if (matchedPoints.length === 0) return
     const next = matchCursor === -1
@@ -145,6 +160,7 @@ export function GameContainer() {
         answerPoint={answerPoint}
         showAnswer={!!showAnswer}
         roundKey={currentRoundIndex}
+        onInspectPoint={setInspected}
       />
 
       <GameHeader
@@ -157,6 +173,15 @@ export function GameContainer() {
       />
 
       <GameControls />
+
+      {inspected && (
+        <NeuronInspector
+          point={inspected}
+          anchor={handleInspectorAnchor}
+          onPin={handleInspectorPin}
+          onClose={() => setInspected(null)}
+        />
+      )}
 
       <AnimatePresence>
         {isReveal && currentRound && (
