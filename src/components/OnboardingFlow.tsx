@@ -29,8 +29,8 @@ const STEPS = [
   },
   {
     selector: '[data-onboarding="feature-search"]',
-    title: 'Place your pin',
-    body: 'Search the map for a concept, or click anywhere to drop a pin.',
+    title: 'Search the map and place a pin',
+    body: 'Search the map for concepts, and click anywhere to drop a pin.',
   },
   {
     selector: '[data-onboarding="lock-in-button"]',
@@ -264,15 +264,15 @@ export function OnboardingFlow() {
 
           <h2 className="text-xl font-bold text-white mb-4">Neurondle</h2>
           <div className="space-y-3 mb-6">
-            <p className="text-sm text-gray-300 leading-relaxed">
+            {/* <p className="text-sm text-gray-300 leading-relaxed">
               Three rounds. One mystery neuron each. Pin it on the map.
-            </p>
+            </p> */}
             <p className="text-sm text-gray-300 leading-relaxed">
-              Inside every AI are thousands of neurons. Each one is tuned to a single concept: a place, a word, a pattern. You&rsquo;ll see one per round. Identify the concept, then place a pin on its location on the map.
+              Inside every AI are thousands of "neurons". Each one is tuned to a single concept: a place, a word, a pattern. You&rsquo;ll see one per round. Identify the concept, then place a pin on its location on the map.
             </p>
-            <p className="text-sm text-gray-300 leading-relaxed">
+            {/* <p className="text-sm text-gray-300 leading-relaxed">
               Fewer hints, higher score.
-            </p>
+            </p> */}
           </div>
           <div className="flex items-center justify-between">
             <button
