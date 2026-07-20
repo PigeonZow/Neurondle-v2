@@ -18,6 +18,8 @@ export interface UmapCanvasRef {
   centerOnPoint: (point: { x: number; y: number }) => void
   setSearchHighlight: (point: { x: number; y: number } | null) => void
   showPointLabel: (point: UmapPoint | null) => void
+  showProbeGlow: (results: { index: number; value: number }[]) => void
+  clearProbeGlow: () => void
 }
 
 interface TooltipState {
@@ -82,6 +84,8 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
     zoomToFit: (pin: { x: number; y: number }, answer: { x: number; y: number }) => void
     centerOnPoint: (point: { x: number; y: number }) => void
     setSearchHighlight: (point: { x: number; y: number } | null) => void
+    showProbeGlow: (results: { index: number; value: number }[]) => void
+    clearProbeGlow: () => void
   } | null>(null)
 
   const [tooltip, setTooltip] = useState<TooltipState>({
@@ -103,6 +107,12 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
     },
     setSearchHighlight: (point: { x: number; y: number } | null) => {
       pixiRef.current?.setSearchHighlight(point)
+    },
+    showProbeGlow: (results: { index: number; value: number }[]) => {
+      pixiRef.current?.showProbeGlow(results)
+    },
+    clearProbeGlow: () => {
+      pixiRef.current?.clearProbeGlow()
     },
     showPointLabel: (point: UmapPoint | null) => {
       if (labelRafRef.current !== null) {
@@ -194,6 +204,7 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
   useEffect(() => {
     if (!pixiRef.current) return
     pixiRef.current.clearPinAndLine()
+    pixiRef.current.clearProbeGlow()
     pixiRef.current.resetView()
   }, [roundKey])
 
@@ -297,6 +308,16 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
       const highlightTexture = app.renderer.generateTexture(highlightGraphics)
       const HIGHLIGHT_SPRITE_SCALE = (DISPLAY_RADIUS * 1.5) / (TEXTURE_RADIUS * 1.5)
 
+      // Probe glow: cyan halo, slightly larger than the highlight ring, with
+      // per-sprite alpha encoding activation strength
+      const probeGraphics = new PIXI.Graphics()
+      probeGraphics.circle(0, 0, TEXTURE_RADIUS * 2)
+      probeGraphics.fill({ color: 0x22d3ee, alpha: 1 })
+      const probeTexture = app.renderer.generateTexture(probeGraphics)
+      const PROBE_SPRITE_SCALE = (DISPLAY_RADIUS * 2) / (TEXTURE_RADIUS * 2)
+      const probeSprites = new Map<number, any>()
+      const probeContainer = new PIXI.Container()
+
       const spriteMap = new Map<number, any>()
       const highlightSprites = new Map<number, any>()
 
@@ -318,6 +339,7 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
       })
 
       viewport.addChild(pointsContainer)
+      viewport.addChild(probeContainer)
       viewport.addChild(highlightContainer)
       viewport.addChild(overlayContainer)
 
@@ -340,6 +362,9 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
 
         spriteMap.forEach(sprite => { sprite.scale.set(pointScale) })
         highlightSprites.forEach(sprite => { sprite.scale.set(highlightScale) })
+
+        const probeScale = PROBE_SPRITE_SCALE / zoomScale
+        probeSprites.forEach(sprite => { sprite.scale.set(probeScale) })
 
         if (pinSprite) pinSprite.scale.set(1 / zoomScale)
         if (answerSprite) answerSprite.scale.set(1 / zoomScale)
@@ -570,6 +595,36 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
             time: 600,
             ease: 'easeInOutSine',
           })
+        },
+        showProbeGlow: (results: { index: number; value: number }[]) => {
+          probeSprites.forEach(sprite => {
+            probeContainer.removeChild(sprite)
+            sprite.destroy()
+          })
+          probeSprites.clear()
+
+          const top = results[0]?.value || 1
+          const probeScale = PROBE_SPRITE_SCALE / viewport.scaled
+
+          results.forEach(({ index, value }) => {
+            const point = data.find(p => p.index === index)
+            if (!point) return
+            const sprite = new PIXI.Sprite(probeTexture)
+            sprite.x = point.x * scale + offsetX
+            sprite.y = point.y * scale + offsetY
+            sprite.anchor.set(0.5)
+            sprite.scale.set(probeScale)
+            sprite.alpha = 0.25 + 0.75 * (value / top)
+            probeContainer.addChild(sprite)
+            probeSprites.set(index, sprite)
+          })
+        },
+        clearProbeGlow: () => {
+          probeSprites.forEach(sprite => {
+            probeContainer.removeChild(sprite)
+            sprite.destroy()
+          })
+          probeSprites.clear()
         },
         setSearchHighlight: (point) => {
           // Remove previous ring
