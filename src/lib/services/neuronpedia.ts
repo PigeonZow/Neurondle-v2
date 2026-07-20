@@ -92,6 +92,64 @@ export async function getUmapData(config: SAEConfig): Promise<UmapPoint[]> {
   }))
 }
 
+export interface ProbeResult {
+  index: number
+  maxValue: number
+  maxValueIndex: number
+  values: number[]
+}
+
+export interface ProbeResponse {
+  tokens: string[]
+  results: ProbeResult[]
+}
+
+/**
+ * Run text through the model and return the top activating features across
+ * the whole SAE (Neuronpedia "search via inference"). numResults max is 100.
+ */
+export async function searchAllActivations(
+  config: SAEConfig,
+  text: string
+): Promise<ProbeResponse> {
+  const response = await fetch(`${BASE_URL}/search-all`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify({
+      modelId: config.modelId,
+      // sourceSet is the layer id without its leading layer number,
+      // e.g. "12-gemmascope-res-16k" -> "gemmascope-res-16k"
+      sourceSet: config.layer.replace(/^\d+-/, ''),
+      text,
+      selectedLayers: [config.layer],
+      sortIndexes: [],
+      ignoreBos: true,
+      densityThreshold: -1,
+      numResults: 100,
+    }),
+  })
+
+  if (!response.ok) {
+    throw new Error(`Probe failed: ${response.statusText}`)
+  }
+
+  const data = await response.json()
+  return {
+    tokens: data.tokens ?? [],
+    results: (data.result ?? []).map((r: {
+      index: string
+      maxValue: number
+      maxValueIndex: number
+      values: number[]
+    }) => ({
+      index: parseInt(r.index, 10),
+      maxValue: r.maxValue,
+      maxValueIndex: r.maxValueIndex,
+      values: r.values,
+    })),
+  }
+}
+
 /**
  * Export all explanations for a layer (for database sync)
  */
