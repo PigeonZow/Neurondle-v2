@@ -30,7 +30,7 @@ const STEPS = [
   {
     selector: '[data-onboarding="feature-search"]',
     title: 'Search the map and place a pin',
-    body: 'Search the map for concepts, and click anywhere to drop a pin.',
+    body: 'Search the map for concepts. Click a dot to inspect that neuron, or click empty space to drop your pin.',
   },
   {
     selector: '[data-onboarding="lock-in-button"]',
