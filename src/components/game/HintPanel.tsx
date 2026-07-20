@@ -35,7 +35,7 @@ export function HintPanel({ hints, totalHints, hintsRevealed, onRevealHint }: Hi
         </button>
       </div>
 
-      <div className="space-y-1.5 h-52 2xl:h-96 overflow-y-auto pr-1">
+      <div className="space-y-1.5 max-h-52 2xl:max-h-96 overflow-y-auto pr-1">
         <AnimatePresence initial={false}>
           {[...hints].reverse().map((hint) => (
             <motion.div

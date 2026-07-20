@@ -62,24 +62,26 @@ export function GameControls({ onProbeResults }: GameControlsProps) {
         </div>
       </div>
 
-      {/* Hints — fixed height, hint cards scroll internally */}
-      <div className="shrink-0 px-5 2xl:px-6 py-4 border-b border-white/10">
-        <HintPanel
-          hints={revealedHints}
-          totalHints={totalHints}
-          onRevealHint={revealHint}
-          hintsRevealed={hintsRevealed}
-        />
+      {/* Scrollable middle: hints + test. The HUD above and Lock In below are
+          pinned, so the primary action can never be pushed out of view. */}
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        <div className="px-5 2xl:px-6 py-4 border-b border-white/10">
+          <HintPanel
+            hints={revealedHints}
+            totalHints={totalHints}
+            onRevealHint={revealHint}
+            hintsRevealed={hintsRevealed}
+          />
+        </div>
+
+        <div className="px-5 2xl:px-6 py-4 space-y-3">
+          <p className="text-[10px] 2xl:text-xs uppercase tracking-widest text-gray-200">Test your theory</p>
+          <TestInput onProbeResults={onProbeResults} />
+        </div>
       </div>
 
-      {/* Test input */}
-      <div className="shrink-0 px-5 2xl:px-6 py-4 border-b border-white/10 space-y-3">
-        <p className="text-[10px] 2xl:text-xs uppercase tracking-widest text-gray-200">Test your theory</p>
-        <TestInput onProbeResults={onProbeResults} />
-      </div>
-
-      {/* Lock-in button */}
-      <div className="shrink-0 px-5 2xl:px-6 py-4 2xl:py-5">
+      {/* Lock-in button — pinned footer */}
+      <div className="shrink-0 px-5 2xl:px-6 py-4 2xl:py-5 border-t border-white/10">
         <button
           data-onboarding="lock-in-button"
           onClick={lockIn}
