@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGameStore, selectCurrentRound, selectIsGameComplete } from '@/lib/store/gameStore'
 import { UmapCanvas, UmapCanvasRef } from './UmapCanvas'
@@ -20,8 +20,22 @@ export function GameContainer() {
   const [error, setError] = useState<string | null>(null)
   const [umapData, setUmapData] = useState<UmapPoint[]>([])
   const [searchQuery, setSearchQuery] = useState('')
+  const [matchCursor, setMatchCursor] = useState(-1)
 
   const umapRef = useRef<UmapCanvasRef>(null)
+
+  // Matches for the active highlight filter, in stable point-index order.
+  // Single source of truth for both the canvas highlights and the jump cycler.
+  const matchedPoints = useMemo(() => {
+    if (!searchQuery) return []
+    const query = searchQuery.toLowerCase()
+    return umapData.filter(p => p.description?.toLowerCase().includes(query))
+  }, [searchQuery, umapData])
+
+  const highlightIndices = useMemo(
+    () => new Set(matchedPoints.map(p => p.index)),
+    [matchedPoints]
+  )
 
   const initGame = useGameStore(state => state.initGame)
   const setSessionId = useGameStore(state => state.setSessionId)
@@ -67,7 +81,27 @@ export function GameContainer() {
   const handleJumpToPoint = useCallback((point: UmapPoint) => {
     umapRef.current?.centerOnPoint({ x: point.x, y: point.y })
     umapRef.current?.setSearchHighlight({ x: point.x, y: point.y })
+    umapRef.current?.showPointLabel(point)
   }, [])
+
+  const handleFilterChange = useCallback((query: string) => {
+    setSearchQuery(query)
+    setMatchCursor(-1)
+    umapRef.current?.setSearchHighlight(null)
+    umapRef.current?.showPointLabel(null)
+  }, [])
+
+  const handleJumpToMatch = useCallback((direction: 1 | -1) => {
+    if (matchedPoints.length === 0) return
+    const next = matchCursor === -1
+      ? (direction === 1 ? 0 : matchedPoints.length - 1)
+      : (matchCursor + direction + matchedPoints.length) % matchedPoints.length
+    setMatchCursor(next)
+    const point = matchedPoints[next]
+    umapRef.current?.centerOnPoint({ x: point.x, y: point.y })
+    umapRef.current?.setSearchHighlight({ x: point.x, y: point.y })
+    umapRef.current?.showPointLabel(point)
+  }, [matchedPoints, matchCursor])
 
   if (loading) {
     return (
@@ -107,7 +141,7 @@ export function GameContainer() {
       <UmapCanvas
         ref={umapRef}
         data={umapData}
-        searchQuery={searchQuery}
+        highlightIndices={highlightIndices}
         answerPoint={answerPoint}
         showAnswer={!!showAnswer}
         roundKey={currentRoundIndex}
@@ -115,7 +149,10 @@ export function GameContainer() {
 
       <GameHeader
         umapData={umapData}
-        onFilterChange={setSearchQuery}
+        matchCount={matchedPoints.length}
+        matchCursor={matchCursor}
+        onFilterChange={handleFilterChange}
+        onJumpToMatch={handleJumpToMatch}
         onJumpToPoint={handleJumpToPoint}
       />
 

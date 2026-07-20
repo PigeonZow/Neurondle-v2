@@ -8,7 +8,7 @@ import type { UmapPoint } from '@/types'
 
 interface UmapCanvasProps {
   data: UmapPoint[]
-  searchQuery?: string
+  highlightIndices?: Set<number>
   answerPoint?: { x: number; y: number } | null
   showAnswer?: boolean
   roundKey?: number
@@ -17,6 +17,7 @@ interface UmapCanvasProps {
 export interface UmapCanvasRef {
   centerOnPoint: (point: { x: number; y: number }) => void
   setSearchHighlight: (point: { x: number; y: number } | null) => void
+  showPointLabel: (point: UmapPoint | null) => void
 }
 
 interface TooltipState {
@@ -25,6 +26,11 @@ interface TooltipState {
   y: number
   point: UmapPoint | null
 }
+
+// Screen-px radius shared by the hover ring, tooltip lookup, and pin snap.
+// Keeping them identical means the ring telegraphs exactly what a click
+// will snap to; anything outside it places the pin freely.
+const HOVER_RADIUS_PX = 20
 
 // Simple spatial index for fast lookups
 class SpatialIndex {
@@ -54,7 +60,7 @@ class SpatialIndex {
 
 export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function UmapCanvas({
   data,
-  searchQuery = '',
+  highlightIndices,
   answerPoint,
   showAnswer = false,
   roundKey = 0,
@@ -63,6 +69,7 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
   const pixiRef = useRef<{
     destroy: () => void
     getWorldCoords: (screenX: number, screenY: number) => { x: number; y: number } | null
+    toScreen: (x: number, y: number) => { x: number; y: number }
     getZoom: () => number
     spatialIndex: SpatialIndex
     scale: number
@@ -84,12 +91,44 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
     point: null,
   })
 
+  // Tooltip shown programmatically (jump-to-match) rather than by hover. It
+  // survives mouse movement over the header controls so repeated ‹ › clicks
+  // don't dismiss it; hovering the map hands control back to normal hover.
+  const stickyTooltipRef = useRef(false)
+  const labelRafRef = useRef<number | null>(null)
+
   useImperativeHandle(ref, () => ({
     centerOnPoint: (point: { x: number; y: number }) => {
       pixiRef.current?.centerOnPoint(point)
     },
     setSearchHighlight: (point: { x: number; y: number } | null) => {
       pixiRef.current?.setSearchHighlight(point)
+    },
+    showPointLabel: (point: UmapPoint | null) => {
+      if (labelRafRef.current !== null) {
+        window.cancelAnimationFrame(labelRafRef.current)
+        labelRafRef.current = null
+      }
+      if (!point) {
+        if (stickyTooltipRef.current) {
+          stickyTooltipRef.current = false
+          setTooltip(prev => ({ ...prev, visible: false }))
+        }
+        return
+      }
+      stickyTooltipRef.current = true
+      // Show immediately and track the point while the camera pans to it
+      // (centerOnPoint animates for 600ms), then settle
+      const start = performance.now()
+      const update = () => {
+        if (!pixiRef.current || !stickyTooltipRef.current) return
+        const pos = pixiRef.current.toScreen(point.x, point.y)
+        setTooltip({ visible: true, x: pos.x, y: pos.y, point })
+        labelRafRef.current = performance.now() - start < 700
+          ? window.requestAnimationFrame(update)
+          : null
+      }
+      update()
     },
   }), [])
 
@@ -117,9 +156,12 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
     const isOverControls = target.closest('.game-overlay') !== null
 
     if (isOverControls) {
-      setTooltip(prev => ({ ...prev, visible: false }))
+      if (!stickyTooltipRef.current) {
+        setTooltip(prev => ({ ...prev, visible: false }))
+      }
       return
     }
+    stickyTooltipRef.current = false
 
     const coords = pixiRef.current.getWorldCoords(e.clientX, e.clientY)
     if (!coords) return
@@ -128,7 +170,7 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
     const screenX = coords.x * scale + offsetX
     const screenY = coords.y * scale + offsetY
 
-    const searchDist = 20 / pixiRef.current.getZoom()
+    const searchDist = HOVER_RADIUS_PX / pixiRef.current.getZoom()
     const nearest = spatialIndex.findNearest(screenX, screenY, searchDist)
 
     if (nearest) {
@@ -156,22 +198,8 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
   }, [roundKey])
 
   useEffect(() => {
-    if (!pixiRef.current || !searchQuery) {
-      pixiRef.current?.highlightPoints(new Set())
-      return
-    }
-
-    const query = searchQuery.toLowerCase()
-    const matchingIndices = new Set<number>()
-
-    data.forEach((point) => {
-      if (point.description?.toLowerCase().includes(query)) {
-        matchingIndices.add(point.index)
-      }
-    })
-
-    pixiRef.current.highlightPoints(matchingIndices)
-  }, [searchQuery, data])
+    pixiRef.current?.highlightPoints(highlightIndices ?? new Set())
+  }, [highlightIndices])
 
   useEffect(() => {
     if (!containerRef.current || data.length === 0) return
@@ -325,19 +353,18 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
       updateScalesOnZoom()
 
       viewport.on('clicked', (e) => {
-        // Snap to the nearest feature dot within 200 screen-space pixels.
-        // Converting to world-space: threshold = 200 / zoom.
-        const snapThreshold = 200 / viewport.scaled
+        // Snap only when a dot is inside the hover ring (the ring telegraphs
+        // the snap); any other click places the pin exactly where it landed.
+        const snapThreshold = HOVER_RADIUS_PX / viewport.scaled
         const nearest = spatialIndex.findNearest(e.world.x, e.world.y, snapThreshold)
 
-        // No dot within range — silent no-op, don't place pin in dead space
-        if (!nearest) return
-
-        const snappedX = nearest.x * scale + offsetX
-        const snappedY = nearest.y * scale + offsetY
+        const snappedX = nearest ? nearest.x * scale + offsetX : e.world.x
+        const snappedY = nearest ? nearest.y * scale + offsetY : e.world.y
 
         // Store UMAP-space coordinates for game logic
-        setPin({ x: nearest.x, y: nearest.y })
+        setPin(nearest
+          ? { x: nearest.x, y: nearest.y }
+          : { x: (e.world.x - offsetX) / scale, y: (e.world.y - offsetY) / scale })
 
         // Clear search highlight once the player commits a pin
         if (searchHighlightSprite) {
@@ -364,7 +391,7 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
 
       const onPointerMove = (e: any) => {
         const worldPos = viewport.toWorld(e.global)
-        const searchDist = 20 / viewport.scaled
+        const searchDist = HOVER_RADIUS_PX / viewport.scaled
         const nearest = spatialIndex.findNearest(worldPos.x, worldPos.y, searchDist)
 
         if (nearest) {
@@ -390,6 +417,10 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
             x: (worldPos.x - offsetX) / scale,
             y: (worldPos.y - offsetY) / scale,
           }
+        },
+        toScreen: (x: number, y: number) => {
+          const screenPos = viewport.toScreen({ x: x * scale + offsetX, y: y * scale + offsetY })
+          return { x: screenPos.x, y: screenPos.y }
         },
         getZoom: () => viewport.scaled,
         spatialIndex,

@@ -6,11 +6,21 @@ import type { UmapPoint } from '@/types'
 
 interface GameHeaderProps {
   umapData: UmapPoint[]
+  matchCount: number
+  matchCursor: number
   onFilterChange: (query: string) => void
+  onJumpToMatch: (direction: 1 | -1) => void
   onJumpToPoint: (point: UmapPoint) => void
 }
 
-export function GameHeader({ umapData, onFilterChange, onJumpToPoint }: GameHeaderProps) {
+export function GameHeader({
+  umapData,
+  matchCount,
+  matchCursor,
+  onFilterChange,
+  onJumpToMatch,
+  onJumpToPoint,
+}: GameHeaderProps) {
   const triggerReplay = useOnboardingStore(state => state.triggerReplay)
 
   return (
@@ -24,7 +34,10 @@ export function GameHeader({ umapData, onFilterChange, onJumpToPoint }: GameHead
         <div className="max-w-2xl 2xl:max-w-3xl min-[1920px]:max-w-4xl mx-auto w-full">
           <FeatureSearch
             data={umapData}
+            matchCount={matchCount}
+            matchCursor={matchCursor}
             onFilterChange={onFilterChange}
+            onJumpToMatch={onJumpToMatch}
             onJumpToPoint={onJumpToPoint}
           />
         </div>
