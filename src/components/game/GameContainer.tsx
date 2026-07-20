@@ -23,7 +23,7 @@ export function GameContainer() {
   const [searchQuery, setSearchQuery] = useState('')
   const [matchCursor, setMatchCursor] = useState(-1)
   const [inspected, setInspected] = useState<UmapPoint | null>(null)
-  const [exploring, setExploring] = useState(false)
+  const [probeText, setProbeText] = useState<string | null>(null)
 
   const umapRef = useRef<UmapCanvasRef>(null)
 
@@ -96,10 +96,11 @@ export function GameContainer() {
     umapRef.current?.showPointLabel(null)
   }, [])
 
-  // Close the inspector and leave explore mode when the round changes
+  // Close the inspector and drop the glow legend when the round changes
+  // (the canvas clears its own glow sprites on roundKey)
   useEffect(() => {
     setInspected(null)
-    setExploring(false)
+    setProbeText(null)
   }, [currentRoundIndex])
 
   const handleInspectorAnchor = useCallback(
@@ -113,13 +114,19 @@ export function GameContainer() {
   }, [])
 
   const handleProbeResults = useCallback(
-    (results: { index: number; maxValue: number }[]) => {
+    (results: { index: number; maxValue: number }[], text: string) => {
       umapRef.current?.showProbeGlow(
         results.map(r => ({ index: r.index, value: r.maxValue }))
       )
+      setProbeText(text)
     },
     []
   )
+
+  const handleClearProbeGlow = useCallback(() => {
+    umapRef.current?.clearProbeGlow()
+    setProbeText(null)
+  }, [])
 
   const handleJumpToMatch = useCallback((direction: 1 | -1) => {
     if (matchedPoints.length === 0) return
@@ -176,6 +183,7 @@ export function GameContainer() {
         showAnswer={!!showAnswer}
         roundKey={currentRoundIndex}
         onInspectPoint={setInspected}
+        tooltipSuppressed={!!inspected}
       />
 
       <GameHeader
@@ -198,35 +206,43 @@ export function GameContainer() {
         />
       )}
 
+      {/* Per-round reveal: docked right so the map stays explorable. The
+          end-of-game ResultsOverlay stays full-screen. */}
       <AnimatePresence>
-        {isReveal && !exploring && currentRound && (
+        {isReveal && currentRound && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+            initial={{ x: 40, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: 40, opacity: 0 }}
+            className="game-overlay fixed right-4 top-20 2xl:top-24 min-[1920px]:top-28 bottom-4 z-40 flex items-center pointer-events-none"
           >
-            <div className="max-w-md w-full">
+            <div className="w-80 2xl:w-96 max-w-[calc(100vw-2rem)] max-h-full overflow-y-auto pointer-events-auto">
               <ScoreReveal
                 score={currentRound.score!}
                 distance={currentRound.distance!}
                 groundTruth={currentRound.puzzle.groundTruthLabel}
                 onContinue={nextRound}
-                onExplore={() => setExploring(true)}
               />
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Explore mode: reveal overlay dismissed, map fully interactive */}
-      {isReveal && exploring && (
-        <div className="game-overlay fixed bottom-6 left-1/2 -translate-x-1/2 z-40">
+      {/* Glow legend: says what the white halos encode, with a clear button */}
+      {probeText && (
+        <div className="game-overlay fixed bottom-12 right-4 z-30 flex items-center gap-2 rounded-full bg-game-surface/90 backdrop-blur-md border border-white/10 shadow-lg pl-3 pr-1.5 py-1.5 text-xs whitespace-nowrap">
+          <span className="w-2.5 h-2.5 shrink-0 rounded-full bg-fuchsia-400 shadow-[0_0_6px_2px_rgba(217,70,239,0.45)]" />
+          <span className="text-gray-300">
+            glow: where <span className="text-white max-w-[10rem] truncate inline-block align-bottom">&ldquo;{probeText}&rdquo;</span> activates
+          </span>
           <button
-            onClick={nextRound}
-            className="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 rounded-full font-semibold shadow-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight"
+            onClick={handleClearProbeGlow}
+            aria-label="Clear activation glow"
+            className="p-1 rounded-full text-gray-400 hover:text-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight"
           >
-            Continue
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
         </div>
       )}

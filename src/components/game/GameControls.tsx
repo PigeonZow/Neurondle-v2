@@ -6,7 +6,7 @@ import { HintPanel } from './HintPanel'
 import { formatScore } from '@/lib/services/scoring'
 
 interface GameControlsProps {
-  onProbeResults: (results: { index: number; maxValue: number }[]) => void
+  onProbeResults: (results: { index: number; maxValue: number }[], text: string) => void
 }
 
 export function GameControls({ onProbeResults }: GameControlsProps) {

@@ -6,7 +6,7 @@ import { TokenWithTooltip } from '@/components/ui/TokenWithTooltip'
 import type { ActivationTest, TokenActivation } from '@/types'
 
 interface TestInputProps {
-  onProbeResults: (results: { index: number; maxValue: number }[]) => void
+  onProbeResults: (results: { index: number; maxValue: number }[], text: string) => void
 }
 
 export function TestInput({ onProbeResults }: TestInputProps) {
@@ -33,6 +33,7 @@ export function TestInput({ onProbeResults }: TestInputProps) {
     if (!text.trim() || loading) return
 
     setLoading(true)
+    const probeText = text.trim()
 
     // Map-wide probe with the same text: lights up the top-activating dots.
     // Fire-and-forget so the mystery result isn't delayed by it.
@@ -42,7 +43,7 @@ export function TestInput({ onProbeResults }: TestInputProps) {
       body: JSON.stringify({
         modelId: currentRound.puzzle.modelId,
         layer: currentRound.puzzle.layer,
-        text: text.trim(),
+        text: probeText,
         sessionId,
         gameId,
         puzzleId: currentRound.puzzle.id,
@@ -50,7 +51,7 @@ export function TestInput({ onProbeResults }: TestInputProps) {
       }),
     })
       .then(r => (r.ok ? r.json() : null))
-      .then(d => { if (d?.results) onProbeResults(d.results) })
+      .then(d => { if (d?.results) onProbeResults(d.results, probeText) })
       .catch(() => {})
 
     try {
@@ -126,9 +127,9 @@ export function TestInput({ onProbeResults }: TestInputProps) {
 
       {/* Result display */}
       {result && (
-        <div className="bg-white/5 rounded-lg p-2 max-h-40 2xl:max-h-56 overflow-y-auto">
+        <div className="bg-white/5 rounded-lg p-2">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-xs 2xl:text-sm text-gray-400">Max activation:</span>
+            <span className="text-xs 2xl:text-sm text-gray-400">Custom text</span>
             <span className="text-xs 2xl:text-sm font-mono text-primary-400">{maxActivation.toFixed(2)}</span>
           </div>
           <div className="flex flex-wrap gap-0.5">
@@ -141,7 +142,7 @@ export function TestInput({ onProbeResults }: TestInputProps) {
               />
             ))}
           </div>
-          <p className="text-[10px] text-gray-500 mt-1">magenta glow on the map = where this text activates</p>
+          {/* <p className="text-[10px] text-gray-500 mt-1">magenta glow on the map = where this text activates</p> */}
         </div>
       )}
     </div>

@@ -13,6 +13,7 @@ interface UmapCanvasProps {
   showAnswer?: boolean
   roundKey?: number
   onInspectPoint?: (point: UmapPoint) => void
+  tooltipSuppressed?: boolean
 }
 
 export interface UmapCanvasRef {
@@ -70,6 +71,7 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
   showAnswer = false,
   roundKey = 0,
   onInspectPoint,
+  tooltipSuppressed = false,
 }, ref) {
   const containerRef = useRef<HTMLDivElement>(null)
   const pixiRef = useRef<{
@@ -110,6 +112,17 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
   // the clicked handler always sees the latest callback
   const onInspectPointRef = useRef(onInspectPoint)
   useEffect(() => { onInspectPointRef.current = onInspectPoint })
+
+  // While the inspector card is open, hover tooltips would stack on top of
+  // it — suppress them (and hide any tooltip that's already showing)
+  const tooltipSuppressedRef = useRef(tooltipSuppressed)
+  useEffect(() => {
+    tooltipSuppressedRef.current = tooltipSuppressed
+    if (tooltipSuppressed) {
+      stickyTooltipRef.current = false
+      setTooltip(prev => (prev.visible ? { ...prev, visible: false } : prev))
+    }
+  }, [tooltipSuppressed])
 
   useImperativeHandle(ref, () => ({
     centerOnPoint: (point: { x: number; y: number }) => {
@@ -172,7 +185,7 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
   })
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (onboardingInProgress.current) {
+    if (onboardingInProgress.current || tooltipSuppressedRef.current) {
       setTooltip(prev => prev.visible ? { ...prev, visible: false } : prev)
       return
     }
@@ -324,9 +337,9 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
       const highlightTexture = app.renderer.generateTexture(highlightGraphics)
       const HIGHLIGHT_SPRITE_SCALE = (DISPLAY_RADIUS * 1.5) / (TEXTURE_RADIUS * 1.5)
 
-      // Probe glow: soft magenta halo — the only magenta on the map, chosen
-      // for contrast against the blue dots (cyan disappeared into them).
-      // ~3x dot radius, with per-sprite alpha encoding activation strength.
+      // Probe glow: soft magenta halo — the only magenta on the map, high
+      // contrast against the blue dots without colliding with search yellow,
+      // ring red, or answer green. Per-sprite alpha encodes activation strength.
       const probeGraphics = new PIXI.Graphics()
       probeGraphics.circle(0, 0, TEXTURE_RADIUS * 3)
       probeGraphics.fill({ color: 0xd946ef, alpha: 0.35 })
