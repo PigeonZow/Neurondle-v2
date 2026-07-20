@@ -6,7 +6,7 @@ import { createServerClient } from '@/lib/db/supabase'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { modelId, layer, featureIndex, text, sessionId, gameId, puzzleId, roundNumber } = body
+    const { modelId, layer, featureIndex, text, sessionId, gameId, puzzleId, roundNumber, testKind } = body
 
     if (!modelId || !layer || featureIndex === undefined || !text) {
       return NextResponse.json(
@@ -44,6 +44,8 @@ export async function POST(request: NextRequest) {
           puzzle_id: puzzleId,
           round_number: roundNumber,
           game_id: gameId ?? null,
+          test_kind: testKind === 'candidate' ? 'candidate' : 'mystery',
+          target_feature_index: featureIndex,
           text_input: typeof text === 'string' ? text : null,
           text_length: typeof text === 'string' ? text.length : 0,
           token_count: filtered.tokens.length,
