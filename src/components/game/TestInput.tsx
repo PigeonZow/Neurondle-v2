@@ -141,7 +141,7 @@ export function TestInput({ onProbeResults }: TestInputProps) {
               />
             ))}
           </div>
-          <p className="text-[10px] text-gray-500 mt-1">cyan glow on the map = where this text activates</p>
+          <p className="text-[10px] text-gray-500 mt-1">magenta glow on the map = where this text activates</p>
         </div>
       )}
     </div>

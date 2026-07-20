@@ -62,7 +62,9 @@ export function GameContainer() {
         if (!umapRes.ok) throw new Error('Failed to load UMAP data')
         const umap: UmapPoint[] = await umapRes.json()
 
-        setUmapData(umap)
+        // The cached UMAP JSON serves index as a string; normalize here so it
+        // matches the declared number type (probe results compare by ===)
+        setUmapData(umap.map(p => ({ ...p, index: Number(p.index) })))
         initGame(puzzles)
         setLoading(false)
 

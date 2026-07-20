@@ -324,13 +324,18 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
       const highlightTexture = app.renderer.generateTexture(highlightGraphics)
       const HIGHLIGHT_SPRITE_SCALE = (DISPLAY_RADIUS * 1.5) / (TEXTURE_RADIUS * 1.5)
 
-      // Probe glow: cyan halo, slightly larger than the highlight ring, with
-      // per-sprite alpha encoding activation strength
+      // Probe glow: soft magenta halo — the only magenta on the map, chosen
+      // for contrast against the blue dots (cyan disappeared into them).
+      // ~3x dot radius, with per-sprite alpha encoding activation strength.
       const probeGraphics = new PIXI.Graphics()
+      probeGraphics.circle(0, 0, TEXTURE_RADIUS * 3)
+      probeGraphics.fill({ color: 0xd946ef, alpha: 0.35 })
       probeGraphics.circle(0, 0, TEXTURE_RADIUS * 2)
-      probeGraphics.fill({ color: 0x22d3ee, alpha: 1 })
+      probeGraphics.fill({ color: 0xd946ef, alpha: 0.5 })
+      probeGraphics.circle(0, 0, TEXTURE_RADIUS * 1.2)
+      probeGraphics.fill({ color: 0xe879f9, alpha: 0.9 })
       const probeTexture = app.renderer.generateTexture(probeGraphics)
-      const PROBE_SPRITE_SCALE = (DISPLAY_RADIUS * 2) / (TEXTURE_RADIUS * 2)
+      const PROBE_SPRITE_SCALE = DISPLAY_RADIUS / TEXTURE_RADIUS
       const probeSprites = new Map<number, any>()
       const probeContainer = new PIXI.Container()
 
