@@ -5,7 +5,11 @@ import { useGameStore, selectCurrentRound } from '@/lib/store/gameStore'
 import { TokenWithTooltip } from '@/components/ui/TokenWithTooltip'
 import type { ActivationTest, TokenActivation } from '@/types'
 
-export function TestInput() {
+interface TestInputProps {
+  onProbeResults: (results: { index: number; maxValue: number }[]) => void
+}
+
+export function TestInput({ onProbeResults }: TestInputProps) {
   const [text, setText] = useState('')
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<ActivationTest | null>(null)
@@ -29,6 +33,26 @@ export function TestInput() {
     if (!text.trim() || loading) return
 
     setLoading(true)
+
+    // Map-wide probe with the same text: lights up the top-activating dots.
+    // Fire-and-forget so the mystery result isn't delayed by it.
+    fetch('/api/probe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        modelId: currentRound.puzzle.modelId,
+        layer: currentRound.puzzle.layer,
+        text: text.trim(),
+        sessionId,
+        gameId,
+        puzzleId: currentRound.puzzle.id,
+        roundNumber: currentRound.puzzle.roundNumber,
+      }),
+    })
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => { if (d?.results) onProbeResults(d.results) })
+      .catch(() => {})
+
     try {
       const response = await fetch('/api/activation', {
         method: 'POST',
@@ -117,6 +141,7 @@ export function TestInput() {
               />
             ))}
           </div>
+          <p className="text-[10px] text-gray-500 mt-1">cyan glow on the map = where this text activates</p>
         </div>
       )}
     </div>

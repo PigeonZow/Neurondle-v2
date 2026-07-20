@@ -106,6 +106,15 @@ export function GameContainer() {
     setInspected(null)
   }, [])
 
+  const handleProbeResults = useCallback(
+    (results: { index: number; maxValue: number }[]) => {
+      umapRef.current?.showProbeGlow(
+        results.map(r => ({ index: r.index, value: r.maxValue }))
+      )
+    },
+    []
+  )
+
   const handleJumpToMatch = useCallback((direction: 1 | -1) => {
     if (matchedPoints.length === 0) return
     const next = matchCursor === -1
@@ -172,7 +181,7 @@ export function GameContainer() {
         onJumpToPoint={handleJumpToPoint}
       />
 
-      <GameControls />
+      <GameControls onProbeResults={handleProbeResults} />
 
       {inspected && (
         <NeuronInspector

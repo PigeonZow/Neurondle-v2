@@ -5,7 +5,11 @@ import { TestInput } from './TestInput'
 import { HintPanel } from './HintPanel'
 import { formatScore } from '@/lib/services/scoring'
 
-export function GameControls() {
+interface GameControlsProps {
+  onProbeResults: (results: { index: number; maxValue: number }[]) => void
+}
+
+export function GameControls({ onProbeResults }: GameControlsProps) {
   const currentRound = useGameStore(selectCurrentRound)
   const revealedHints = useGameStore(selectRevealedHints)
   const lockIn = useGameStore(state => state.lockIn)
@@ -71,7 +75,7 @@ export function GameControls() {
       {/* Test input */}
       <div className="shrink-0 px-5 2xl:px-6 py-4 border-b border-white/10 space-y-3">
         <p className="text-[10px] 2xl:text-xs uppercase tracking-widest text-gray-200">Test your theory</p>
-        <TestInput />
+        <TestInput onProbeResults={onProbeResults} />
       </div>
 
       {/* Lock-in button */}
