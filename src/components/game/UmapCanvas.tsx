@@ -12,6 +12,7 @@ interface UmapCanvasProps {
   answerPoint?: { x: number; y: number } | null
   showAnswer?: boolean
   roundKey?: number
+  onInspectPoint?: (point: UmapPoint) => void
 }
 
 export interface UmapCanvasRef {
@@ -20,6 +21,8 @@ export interface UmapCanvasRef {
   showPointLabel: (point: UmapPoint | null) => void
   showProbeGlow: (results: { index: number; value: number }[]) => void
   clearProbeGlow: () => void
+  pinAtPoint: (point: { x: number; y: number }) => void
+  getScreenPos: (point: { x: number; y: number }) => { x: number; y: number } | null
 }
 
 interface TooltipState {
@@ -66,6 +69,7 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
   answerPoint,
   showAnswer = false,
   roundKey = 0,
+  onInspectPoint,
 }, ref) {
   const containerRef = useRef<HTMLDivElement>(null)
   const pixiRef = useRef<{
@@ -86,6 +90,7 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
     setSearchHighlight: (point: { x: number; y: number } | null) => void
     showProbeGlow: (results: { index: number; value: number }[]) => void
     clearProbeGlow: () => void
+    pinAtPoint: (point: { x: number; y: number }) => void
   } | null>(null)
 
   const [tooltip, setTooltip] = useState<TooltipState>({
@@ -101,6 +106,11 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
   const stickyTooltipRef = useRef(false)
   const labelRafRef = useRef<number | null>(null)
 
+  // The pixi closure is built once per init; mirror the prop into a ref so
+  // the clicked handler always sees the latest callback
+  const onInspectPointRef = useRef(onInspectPoint)
+  useEffect(() => { onInspectPointRef.current = onInspectPoint })
+
   useImperativeHandle(ref, () => ({
     centerOnPoint: (point: { x: number; y: number }) => {
       pixiRef.current?.centerOnPoint(point)
@@ -113,6 +123,12 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
     },
     clearProbeGlow: () => {
       pixiRef.current?.clearProbeGlow()
+    },
+    pinAtPoint: (point: { x: number; y: number }) => {
+      pixiRef.current?.pinAtPoint(point)
+    },
+    getScreenPos: (point: { x: number; y: number }) => {
+      return pixiRef.current ? pixiRef.current.toScreen(point.x, point.y) : null
     },
     showPointLabel: (point: UmapPoint | null) => {
       if (labelRafRef.current !== null) {
@@ -377,19 +393,13 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
       viewport.on('zoomed-end', updateScalesOnZoom)
       updateScalesOnZoom()
 
-      viewport.on('clicked', (e) => {
-        // Snap only when a dot is inside the hover ring (the ring telegraphs
-        // the snap); any other click places the pin exactly where it landed.
-        const snapThreshold = HOVER_RADIUS_PX / viewport.scaled
-        const nearest = spatialIndex.findNearest(e.world.x, e.world.y, snapThreshold)
-
-        const snappedX = nearest ? nearest.x * scale + offsetX : e.world.x
-        const snappedY = nearest ? nearest.y * scale + offsetY : e.world.y
+      // Shared by free-placement clicks and the inspector's "Pin this neuron"
+      const placePinAt = (umapX: number, umapY: number) => {
+        const sx = umapX * scale + offsetX
+        const sy = umapY * scale + offsetY
 
         // Store UMAP-space coordinates for game logic
-        setPin(nearest
-          ? { x: nearest.x, y: nearest.y }
-          : { x: (e.world.x - offsetX) / scale, y: (e.world.y - offsetY) / scale })
+        setPin({ x: umapX, y: umapY })
 
         // Clear search highlight once the player commits a pin
         if (searchHighlightSprite) {
@@ -399,19 +409,37 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
         }
 
         if (pinSprite) {
-          pinSprite.x = snappedX
-          pinSprite.y = snappedY
+          pinSprite.x = sx
+          pinSprite.y = sy
         } else {
           pinSprite = new PIXI.Graphics()
           pinSprite.circle(0, 0, 10)
           pinSprite.fill({ color: 0xfbbf24 })
           pinSprite.circle(0, 0, 5)
           pinSprite.fill({ color: 0xffffff })
-          pinSprite.x = snappedX
-          pinSprite.y = snappedY
+          pinSprite.x = sx
+          pinSprite.y = sy
           pinSprite.scale.set(1 / viewport.scaled)
           overlayContainer.addChild(pinSprite)
         }
+      }
+
+      viewport.on('clicked', (e) => {
+        // A dot inside the hover ring opens the inspector (pinning it happens
+        // via the inspector's button); empty space places the pin freely.
+        const snapThreshold = HOVER_RADIUS_PX / viewport.scaled
+        const nearest = spatialIndex.findNearest(e.world.x, e.world.y, snapThreshold)
+
+        if (nearest) {
+          if (onInspectPointRef.current) {
+            onInspectPointRef.current(nearest)
+          } else {
+            placePinAt(nearest.x, nearest.y)
+          }
+          return
+        }
+
+        placePinAt((e.world.x - offsetX) / scale, (e.world.y - offsetY) / scale)
       })
 
       const onPointerMove = (e: any) => {
@@ -596,6 +624,7 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
             ease: 'easeInOutSine',
           })
         },
+        pinAtPoint: (point: { x: number; y: number }) => placePinAt(point.x, point.y),
         showProbeGlow: (results: { index: number; value: number }[]) => {
           probeSprites.forEach(sprite => {
             probeContainer.removeChild(sprite)
