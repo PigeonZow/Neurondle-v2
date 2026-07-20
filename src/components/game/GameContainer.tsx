@@ -23,6 +23,7 @@ export function GameContainer() {
   const [searchQuery, setSearchQuery] = useState('')
   const [matchCursor, setMatchCursor] = useState(-1)
   const [inspected, setInspected] = useState<UmapPoint | null>(null)
+  const [exploring, setExploring] = useState(false)
 
   const umapRef = useRef<UmapCanvasRef>(null)
 
@@ -95,8 +96,11 @@ export function GameContainer() {
     umapRef.current?.showPointLabel(null)
   }, [])
 
-  // Close the inspector when the round changes
-  useEffect(() => { setInspected(null) }, [currentRoundIndex])
+  // Close the inspector and leave explore mode when the round changes
+  useEffect(() => {
+    setInspected(null)
+    setExploring(false)
+  }, [currentRoundIndex])
 
   const handleInspectorAnchor = useCallback(
     () => (inspected ? umapRef.current?.getScreenPos(inspected) ?? null : null),
@@ -195,7 +199,7 @@ export function GameContainer() {
       )}
 
       <AnimatePresence>
-        {isReveal && currentRound && (
+        {isReveal && !exploring && currentRound && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -208,11 +212,24 @@ export function GameContainer() {
                 distance={currentRound.distance!}
                 groundTruth={currentRound.puzzle.groundTruthLabel}
                 onContinue={nextRound}
+                onExplore={() => setExploring(true)}
               />
             </div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Explore mode: reveal overlay dismissed, map fully interactive */}
+      {isReveal && exploring && (
+        <div className="game-overlay fixed bottom-6 left-1/2 -translate-x-1/2 z-40">
+          <button
+            onClick={nextRound}
+            className="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 rounded-full font-semibold shadow-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight"
+          >
+            Continue
+          </button>
+        </div>
+      )}
 
       {isGameComplete && <ResultsOverlay />}
     </div>

@@ -8,9 +8,10 @@ interface ScoreRevealProps {
   distance: number
   groundTruth: string
   onContinue: () => void
+  onExplore: () => void
 }
 
-export function ScoreReveal({ score, distance, groundTruth, onContinue }: ScoreRevealProps) {
+export function ScoreReveal({ score, distance, groundTruth, onContinue, onExplore }: ScoreRevealProps) {
   const { message, emoji } = getScoreMessage(score)
 
   return (
@@ -65,16 +66,26 @@ export function ScoreReveal({ score, distance, groundTruth, onContinue }: ScoreR
         <p className="text-lg font-medium text-white">{groundTruth}</p>
       </motion.div>
 
-      {/* Continue button */}
-      <motion.button
+      {/* Actions */}
+      <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1 }}
-        onClick={onContinue}
-        className="px-8 py-3 bg-primary-600 hover:bg-primary-700 rounded-lg font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight"
+        className="flex items-center justify-center gap-3"
       >
-        Continue
-      </motion.button>
+        <button
+          onClick={onExplore}
+          className="px-6 py-3 rounded-lg font-semibold border border-white/15 text-gray-200 hover:bg-white/5 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight"
+        >
+          Explore the map
+        </button>
+        <button
+          onClick={onContinue}
+          className="px-8 py-3 bg-primary-600 hover:bg-primary-700 rounded-lg font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight"
+        >
+          Continue
+        </button>
+      </motion.div>
     </motion.div>
   )
 }

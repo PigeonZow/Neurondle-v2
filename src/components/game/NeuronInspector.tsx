@@ -138,7 +138,7 @@ export function NeuronInspector({ point, anchor, onPin, onClose }: NeuronInspect
       </div>
 
       {result && (
-        <div className="bg-white/5 rounded-lg p-2 mb-2">
+        <div className="bg-white/5 rounded-lg p-2 mb-2 max-h-36 overflow-y-auto">
           <div className="flex items-center justify-between mb-1">
             <span className="text-xs text-gray-400">Max activation:</span>
             <span className="text-xs font-mono text-primary-400">{result.maxValue.toFixed(2)}</span>
@@ -160,7 +160,7 @@ export function NeuronInspector({ point, anchor, onPin, onClose }: NeuronInspect
         onClick={() => onPin(point)}
         className="w-full py-1.5 rounded-lg text-sm font-medium bg-game-highlight/20 hover:bg-game-highlight/30 text-game-highlight border border-game-highlight/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight"
       >
-        Pin this neuron
+        Select this neuron
       </button>
     </div>
   )

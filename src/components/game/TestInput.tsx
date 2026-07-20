@@ -126,7 +126,7 @@ export function TestInput({ onProbeResults }: TestInputProps) {
 
       {/* Result display */}
       {result && (
-        <div className="bg-white/5 rounded-lg p-2">
+        <div className="bg-white/5 rounded-lg p-2 max-h-40 2xl:max-h-56 overflow-y-auto">
           <div className="flex items-center justify-between mb-1">
             <span className="text-xs 2xl:text-sm text-gray-400">Max activation:</span>
             <span className="text-xs 2xl:text-sm font-mono text-primary-400">{maxActivation.toFixed(2)}</span>
