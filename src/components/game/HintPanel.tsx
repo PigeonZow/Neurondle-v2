@@ -17,17 +17,17 @@ export function HintPanel({ hints, totalHints, hintsRevealed, onRevealHint }: Hi
   return (
     <div className="space-y-3" data-onboarding="hint-panel">
       <div className="flex items-center justify-between">
-        <span className="text-[10px] 2xl:text-xs uppercase tracking-widest text-gray-200">
-          Hints ({hintsRevealed}/{totalHints})
+        <span className="font-mono text-[10px] 2xl:text-xs uppercase tracking-[0.18em] text-starlight/45">
+          Hints <span className="tabular-nums">({hintsRevealed}/{totalHints})</span>
         </span>
         <button
           onClick={onRevealHint}
           disabled={!canRevealMore}
           className={`
-            text-xs 2xl:text-sm px-2 2xl:px-2.5 py-0.5 2xl:py-1 rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight
+            text-xs 2xl:text-sm px-2 2xl:px-2.5 py-0.5 2xl:py-1 rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60
             ${canRevealMore
-              ? 'bg-primary-600/20 text-primary-400 hover:bg-primary-600/30'
-              : 'text-gray-600 cursor-not-allowed'
+              ? 'bg-accent/10 text-accent hover:bg-accent/20'
+              : 'text-starlight/30 cursor-not-allowed'
             }
           `}
         >
@@ -44,11 +44,11 @@ export function HintPanel({ hints, totalHints, hintsRevealed, onRevealHint }: Hi
               initial={{ opacity: 0, y: -16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ type: 'spring', stiffness: 320, damping: 30 }}
-              className="bg-white/5 rounded-lg p-2"
+              className="bg-ink/50 border border-graticule/25 rounded p-2"
             >
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs 2xl:text-sm text-gray-400">Hint {hint.level}</span>
-                <span className="text-xs 2xl:text-sm font-mono text-gray-300">
+                <span className="font-mono text-xs 2xl:text-sm text-starlight/50">Hint {hint.level}</span>
+                <span className="text-xs 2xl:text-sm font-mono text-starlight/60">
                   {hint.score.toFixed(1)}
                 </span>
               </div>
@@ -70,7 +70,7 @@ export function HintPanel({ hints, totalHints, hintsRevealed, onRevealHint }: Hi
         </AnimatePresence>
 
         {hints.length === 0 && (
-          <p className="text-center text-gray-500 py-4">
+          <p className="text-center text-starlight/40 py-4">
             Click &quot;Reveal Next&quot; to see hints
           </p>
         )}

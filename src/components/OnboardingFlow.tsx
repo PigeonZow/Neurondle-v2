@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { Mouse, Hand, ArrowRight, Check } from 'lucide-react'
+import { CornerTicks } from '@/components/ui/CornerTicks'
 import { useConsentStore } from '@/lib/store/consentStore'
 import { useOnboardingStore } from '@/lib/store/onboardingStore'
 
@@ -24,13 +25,13 @@ const STEPS = [
   },
   {
     selector: '[data-onboarding="activation-input"]',
-    title: 'Test your theory',
-    body: 'Type any text to see how strongly the neuron activates on it. Useful for testing a hunch before locking in.',
+    title: 'Probe',
+    body: 'Type any text to see how strongly the mystery neuron activates on it. The map also glows where that text lands.',
   },
   {
     selector: '[data-onboarding="feature-search"]',
     title: 'Search the map and place a pin',
-    body: 'Search the map for concepts. Click a dot to inspect that neuron, or click empty space to drop your pin.',
+    body: 'Search the map for concepts. Click a dot to pin and inspect that neuron, or click empty space to drop your pin anywhere.',
   },
   {
     selector: '[data-onboarding="lock-in-button"]',
@@ -112,8 +113,8 @@ function StepDots({ current, total }: { current: number; total: number }) {
           key={i}
           className={`inline-block w-2 h-2 rounded-full border transition-colors ${
             i <= current
-              ? 'bg-primary-500 border-primary-500'
-              : 'bg-transparent border-gray-600'
+              ? 'bg-accent border-accent'
+              : 'bg-transparent border-graticule/60'
           }`}
         />
       ))}
@@ -125,7 +126,7 @@ function CoachmarkCloseBtn({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="absolute top-2.5 right-2.5 text-gray-500 hover:text-gray-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight rounded"
+      className="absolute top-2.5 right-2.5 text-starlight/40 hover:text-starlight/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 rounded"
       aria-label="Skip tour"
     >
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -151,12 +152,12 @@ function CoachmarkFooter({
       <StepDots current={step} total={total} />
       <button
         onClick={onAdvance}
-        className="w-7 h-7 rounded-full bg-primary-600 hover:bg-primary-700 flex items-center justify-center transition-colors flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight"
+        className="w-7 h-7 rounded-full bg-accent-deep hover:bg-accent-deep/90 flex items-center justify-center transition-colors flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
         aria-label={isLast ? 'Finish tour' : 'Next step'}
       >
         {isLast
-          ? <Check className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
-          : <ArrowRight className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
+          ? <Check className="w-3.5 h-3.5 text-starlight" strokeWidth={2.5} />
+          : <ArrowRight className="w-3.5 h-3.5 text-starlight" strokeWidth={2.5} />
         }
       </button>
     </div>
@@ -238,11 +239,12 @@ export function OnboardingFlow() {
   // ── Intro modal ──────────────────────────────────────────────────────────────
   if (phase === 'intro') {
     return createPortal(
-      <div className="fixed inset-0 z-[10001] flex items-center justify-center bg-black/80 p-4">
-        <div className="relative bg-[#16213e] border border-gray-700 rounded-xl p-6 w-full max-w-md shadow-2xl">
+      <div className="fixed inset-0 z-[10001] flex items-center justify-center bg-ink/85 p-4">
+        <div className="relative bg-chart border border-graticule/40 rounded-sm p-6 w-full max-w-md shadow-2xl">
+          <CornerTicks />
           <button
             onClick={() => handleSkip()}
-            className="absolute top-3 right-3 text-gray-500 hover:text-gray-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight rounded"
+            className="absolute top-3 right-3 text-starlight/40 hover:text-starlight/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 rounded"
             aria-label="Skip tour"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -258,32 +260,32 @@ export function OnboardingFlow() {
             className="mx-auto mb-5 block"
           >
             {SCATTER_DOTS.map(([cx, cy, r, opacity], i) => (
-              <circle key={i} cx={cx} cy={cy} r={r} fill="#60a5fa" opacity={opacity} />
+              <circle key={i} cx={cx} cy={cy} r={r} fill="#9DB2D6" opacity={opacity} />
             ))}
           </svg>
 
-          <h2 className="text-xl font-bold text-white mb-4">Neurondle</h2>
+          <h2 className="font-wordmark text-xl font-bold mb-4"><span className="text-accent">Neuron</span><span className="text-alert">dle</span></h2>
           <div className="space-y-3 mb-6">
-            {/* <p className="text-sm text-gray-300 leading-relaxed">
+            {/* <p className="text-sm text-starlight/80 leading-relaxed">
               Three rounds. One mystery neuron each. Pin it on the map.
             </p> */}
-            <p className="text-sm text-gray-300 leading-relaxed">
+            <p className="text-sm text-starlight/80 leading-relaxed">
               Inside every AI are thousands of "neurons". Each one is tuned to a single concept: a place, a word, a pattern. You&rsquo;ll see one per round. Identify the concept, then place a pin on its location on the map.
             </p>
-            {/* <p className="text-sm text-gray-300 leading-relaxed">
+            {/* <p className="text-sm text-starlight/80 leading-relaxed">
               Fewer hints, higher score.
             </p> */}
           </div>
           <div className="flex items-center justify-between">
             <button
               onClick={() => handleSkip()}
-              className="text-sm text-gray-500 hover:text-gray-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight rounded"
+              className="text-sm text-starlight/40 hover:text-starlight/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 rounded"
             >
               Skip
             </button>
             <button
               onClick={() => { setPhase('coachmark'); setStep(0) }}
-              className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight"
+              className="px-4 py-2 bg-accent-deep hover:bg-accent-deep/90 text-starlight text-sm font-medium rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
             >
               Start
             </button>
@@ -297,7 +299,7 @@ export function OnboardingFlow() {
   // ── Step 0: map overview — centered card, vignette only, no spotlight ────────
   if (step === 0) {
     return createPortal(
-      <div className="fixed inset-0 z-[10001] pointer-events-auto">
+      <div className="fixed inset-0 z-[10001] pointer-events-none">
         <div
           className="absolute inset-0"
           style={{
@@ -309,27 +311,28 @@ export function OnboardingFlow() {
 
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div
-            className="relative bg-[#16213e] border border-gray-700 rounded-xl shadow-2xl pointer-events-auto"
+            className="relative bg-chart border border-graticule/40 rounded-sm shadow-2xl pointer-events-auto"
             style={{ width: 340 }}
             onClick={(e) => e.stopPropagation()}
           >
+            <CornerTicks />
             <CoachmarkCloseBtn onClick={() => handleSkip(step)} />
 
             <div className="px-3 pt-2.5 pb-2.5 space-y-2">
-              <p className="text-base font-bold text-white leading-snug pr-6">The map</p>
+              <p className="text-base font-bold text-starlight leading-snug pr-6">The map</p>
 
-              <p className="text-sm text-gray-300 leading-relaxed">
+              <p className="text-sm text-starlight/80 leading-relaxed">
                 Every dot is a neuron. The whole space is a map of what this AI has learned to recognize.
               </p>
 
               <div className="flex gap-3 pt-0.5">
-                <div className="flex flex-col items-center gap-1.5 border border-gray-700 rounded-lg py-3 flex-1">
-                  <Mouse className="w-4 h-4 text-gray-400" />
-                  <span className="text-xs text-gray-400">Scroll to zoom</span>
+                <div className="flex flex-col items-center gap-1.5 border border-graticule/40 rounded py-3 flex-1">
+                  <Mouse className="w-4 h-4 text-starlight/60" />
+                  <span className="text-xs text-starlight/60">Scroll to zoom</span>
                 </div>
-                <div className="flex flex-col items-center gap-1.5 border border-gray-700 rounded-lg py-3 flex-1">
-                  <Hand className="w-4 h-4 text-gray-400" />
-                  <span className="text-xs text-gray-400">Drag to pan</span>
+                <div className="flex flex-col items-center gap-1.5 border border-graticule/40 rounded py-3 flex-1">
+                  <Hand className="w-4 h-4 text-starlight/60" />
+                  <span className="text-xs text-starlight/60">Drag to pan</span>
                 </div>
               </div>
 
@@ -383,26 +386,27 @@ export function OnboardingFlow() {
       </svg>
 
       <div
-        className="bg-[#16213e] border border-gray-700 rounded-xl shadow-2xl"
+        className="bg-chart border border-graticule/40 rounded-sm shadow-2xl"
         style={{ position: 'absolute', width: TOOLTIP_W, ...cardStyle, pointerEvents: 'all' }}
         onClick={(e) => e.stopPropagation()}
       >
+        <CornerTicks />
         <CoachmarkCloseBtn onClick={() => handleSkip(step)} />
 
         <div className="px-3 pt-2.5 pb-2.5 space-y-2">
-          <p className="text-base font-bold text-white leading-snug pr-6">{STEPS[step].title}</p>
+          <p className="text-base font-bold text-starlight leading-snug pr-6">{STEPS[step].title}</p>
 
           {step === 1 ? (
             <div className="space-y-2">
-              <p className="text-sm text-gray-300 leading-relaxed">
+              <p className="text-sm text-starlight/80 leading-relaxed">
                 Highlighted words are where the neuron activated in real text. Each one is a clue to the concept.
               </p>
-              <p className="text-sm text-gray-300 leading-relaxed">
+              <p className="text-sm text-starlight/80 leading-relaxed">
                 Reveal more hints for stronger evidence. Every hint costs points.
               </p>
             </div>
           ) : (
-            <p className="text-sm text-gray-300 leading-relaxed">{STEPS[step].body}</p>
+            <p className="text-sm text-starlight/80 leading-relaxed">{STEPS[step].body}</p>
           )}
 
           <CoachmarkFooter

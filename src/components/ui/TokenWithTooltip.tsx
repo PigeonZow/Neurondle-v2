@@ -44,14 +44,14 @@ export function TokenWithTooltip({ token, activation, maxActivation }: TokenWith
 
   const tooltipElement = showTooltip && mounted ? createPortal(
     <div
-      className="fixed z-[9999] bg-gray-900 border border-gray-700 rounded px-2 py-1 text-xs shadow-lg pointer-events-none whitespace-nowrap"
+      className="fixed z-[9999] bg-chart border border-graticule/50 rounded px-2 py-1 text-xs shadow-lg pointer-events-none whitespace-nowrap"
       style={{
         left: tooltipPos.x,
         top: tooltipPos.y,
         transform: 'translateX(-50%)',
       }}
     >
-      <span className="text-gray-300">Activation </span><span className="text-game-highlight font-medium">{activation.toFixed(2)}</span>
+      <span className="text-starlight/60">Activation </span><span className="text-alert font-mono font-medium">{activation.toFixed(2)}</span>
     </div>,
     document.body
   ) : null
@@ -61,7 +61,7 @@ export function TokenWithTooltip({ token, activation, maxActivation }: TokenWith
       <span
         ref={spanRef}
         className="token cursor-default relative text-xs 2xl:text-sm"
-        style={{ backgroundColor: `rgba(233, 69, 96, ${opacity})` }}
+        style={{ backgroundColor: `rgb(var(--alert) / ${opacity})` }}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={() => setShowTooltip(false)}
       >

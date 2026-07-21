@@ -8,13 +8,12 @@ import type { UmapPoint, TokenActivation } from '@/types'
 interface NeuronInspectorProps {
   point: UmapPoint
   anchor: () => { x: number; y: number } | null
-  onPin: (point: UmapPoint) => void
   onClose: () => void
 }
 
 const CARD_WIDTH = 288 // w-72, used for viewport clamping
 
-export function NeuronInspector({ point, anchor, onPin, onClose }: NeuronInspectorProps) {
+export function NeuronInspector({ point, anchor, onClose }: NeuronInspectorProps) {
   const cardRef = useRef<HTMLDivElement>(null)
   const [text, setText] = useState('')
   const [loading, setLoading] = useState(false)
@@ -95,14 +94,14 @@ export function NeuronInspector({ point, anchor, onPin, onClose }: NeuronInspect
   return (
     <div
       ref={cardRef}
-      className="game-overlay fixed left-0 top-0 z-40 w-72 bg-game-surface/95 backdrop-blur-md border border-gray-700 rounded-lg shadow-xl p-3"
+      className="game-overlay fixed left-0 top-0 z-40 w-72 bg-chart/95 border border-graticule/40 rounded-sm shadow-xl p-3"
     >
       <div className="flex items-start justify-between gap-2 mb-2">
-        <p className="text-xs text-gray-400 font-mono">Feature #{point.index}</p>
+        <p className="text-xs text-starlight/50 font-mono">Feature #{point.index}</p>
         <button
           onClick={onClose}
           aria-label="Close inspector"
-          className="text-gray-400 hover:text-white p-0.5 -m-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight rounded"
+          className="text-starlight/50 hover:text-starlight p-0.5 -m-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 rounded"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -110,8 +109,8 @@ export function NeuronInspector({ point, anchor, onPin, onClose }: NeuronInspect
         </button>
       </div>
 
-      <p className="text-sm text-white mb-3">
-        <span className="text-gray-400 text-xs">auto-label: </span>
+      <p className="text-sm text-starlight mb-3">
+        <span className="font-mono text-starlight/45 text-xs">auto-label: </span>
         {point.description || 'No label'}
       </p>
 
@@ -122,15 +121,15 @@ export function NeuronInspector({ point, anchor, onPin, onClose }: NeuronInspect
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleTest()}
           placeholder="Test this neuron..."
-          className="flex-1 min-w-0 bg-white/5 border border-white/10 hover:border-white/15 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-gray-400 focus:outline-none focus:border-primary-500/60 focus:bg-white/[0.07] focus-visible:ring-2 focus-visible:ring-primary-500/30 transition-colors"
+          className="flex-1 min-w-0 bg-ink/50 border border-graticule/40 hover:border-graticule/60 rounded px-2.5 py-1.5 text-xs text-starlight placeholder-starlight/35 focus:outline-none focus:border-accent/60 focus:bg-ink/70 focus-visible:ring-2 focus-visible:ring-accent/25 transition-colors"
         />
         <button
           onClick={handleTest}
           disabled={loading || !text.trim()}
-          className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight ${
+          className={`px-2.5 py-1.5 rounded text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 ${
             loading || !text.trim()
-              ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-              : 'bg-primary-600 hover:bg-primary-700 text-white'
+              ? 'border border-graticule/40 text-starlight/30 cursor-not-allowed'
+              : 'bg-starlight/10 hover:bg-starlight/20 text-starlight'
           }`}
         >
           {loading ? '...' : 'Test'}
@@ -138,10 +137,10 @@ export function NeuronInspector({ point, anchor, onPin, onClose }: NeuronInspect
       </div>
 
       {result && (
-        <div className="bg-white/5 rounded-lg p-2 mb-2 max-h-36 overflow-y-auto">
+        <div className="bg-ink/50 border border-graticule/25 rounded p-2 max-h-36 overflow-y-auto">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-xs text-gray-400">Max activation:</span>
-            <span className="text-xs font-mono text-primary-400">{result.maxValue.toFixed(2)}</span>
+            <span className="text-xs text-starlight/50">Max activation:</span>
+            <span className="text-xs font-mono text-accent">{result.maxValue.toFixed(2)}</span>
           </div>
           <div className="flex flex-wrap gap-0.5">
             {result.tokens.map((t, i) => (
@@ -153,15 +152,13 @@ export function NeuronInspector({ point, anchor, onPin, onClose }: NeuronInspect
               />
             ))}
           </div>
+          {text.trimStart().startsWith('<bos>') && (
+            <p className="text-[10px] text-starlight/40 mt-1">
+              A leading &lt;bos&gt; is read as the model&apos;s start-of-sequence token, so it isn&apos;t shown above.
+            </p>
+          )}
         </div>
       )}
-
-      <button
-        onClick={() => onPin(point)}
-        className="w-full py-1.5 rounded-lg text-sm font-medium bg-game-highlight/20 hover:bg-game-highlight/30 text-game-highlight border border-game-highlight/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight"
-      >
-        Select this neuron
-      </button>
     </div>
   )
 }

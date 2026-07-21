@@ -23,12 +23,12 @@ export function calculateScore(distance: number): number {
  * Get score message and emoji based on score value
  */
 export function getScoreMessage(score: number): ScoreMessage {
-  if (score >= 9500) return { message: 'Perfect!', emoji: '🎯' }
-  if (score >= 7000) return { message: 'Excellent!', emoji: '🔥' }
-  if (score >= 5000) return { message: 'Great!', emoji: '⭐' }
-  if (score >= 3000) return { message: 'Good!', emoji: '👍' }
-  if (score >= 1000) return { message: 'Nice try!', emoji: '🙂' }
-  return { message: 'Keep exploring!', emoji: '🔍' }
+  if (score >= 9500) return { message: 'Direct hit', emoji: '🎯' }
+  if (score >= 9000) return { message: 'Near miss', emoji: '🔥' }
+  if (score >= 7000) return { message: 'Close', emoji: '⭐' }
+  if (score >= 4000) return { message: 'Similar region', emoji: '👍' }
+  if (score >= 3000) return { message: 'Far off', emoji: '🙂' }
+  return { message: 'Way off', emoji: '🔍' }
 }
 
 /**

@@ -3,6 +3,7 @@
 import { useGameStore, selectCurrentRound, selectRevealedHints } from '@/lib/store/gameStore'
 import { TestInput } from './TestInput'
 import { HintPanel } from './HintPanel'
+import { CornerTicks } from '@/components/ui/CornerTicks'
 import { formatScore } from '@/lib/services/scoring'
 
 interface GameControlsProps {
@@ -29,24 +30,25 @@ export function GameControls({ onProbeResults }: GameControlsProps) {
 
   return (
     <div className="game-overlay fixed left-4 top-20 2xl:top-24 min-[1920px]:top-28 bottom-4 flex items-center z-30 pointer-events-none">
-    <aside className="w-80 2xl:w-[28rem] min-[1920px]:w-[32rem] max-w-[calc(100vw-2rem)] max-h-full flex flex-col bg-game-surface/70 backdrop-blur-md rounded-2xl border border-white/15 shadow-2xl overflow-hidden pointer-events-auto">
+    <aside className="relative w-80 2xl:w-[28rem] min-[1920px]:w-[32rem] max-w-[calc(100vw-2rem)] max-h-full flex flex-col bg-chart/90 rounded-sm border border-graticule/35 shadow-2xl overflow-hidden pointer-events-auto">
+      <CornerTicks />
       {/* HUD: Round + Score on one line */}
-      <div className="shrink-0 px-5 2xl:px-6 py-4 2xl:py-6 border-b border-white/10 flex items-center justify-between gap-4">
+      <div className="shrink-0 px-5 2xl:px-6 py-4 2xl:py-6 border-b border-graticule/25 flex items-center justify-between gap-4">
         <div>
-          <p className="text-[10px] 2xl:text-xs uppercase tracking-widest text-gray-200 mb-1">Round</p>
+          <p className="font-mono text-[10px] 2xl:text-xs uppercase tracking-[0.18em] text-starlight/45 mb-1.5">Round</p>
           <div className="flex items-center gap-1.5">
             {Array.from({ length: totalRounds }).map((_, i) => {
               const isPast = i < currentRoundIndex
               const isCurrent = i === currentRoundIndex
               const cls = isPast
-                ? 'bg-primary-400 text-white'
+                ? 'bg-accent text-ink'
                 : isCurrent
-                  ? 'border-2 border-primary-400 text-white bg-primary-400/10'
-                  : 'bg-white/10 text-gray-500'
+                  ? 'border-2 border-accent text-starlight bg-accent/10'
+                  : 'border border-graticule/50 text-starlight/40'
               return (
                 <div
                   key={i}
-                  className={`w-7 h-7 2xl:w-8 2xl:h-8 rounded-full flex items-center justify-center text-sm 2xl:text-base font-bold tabular-nums ${cls}`}
+                  className={`w-7 h-7 2xl:w-8 2xl:h-8 rounded-full flex items-center justify-center font-mono text-sm 2xl:text-base font-semibold tabular-nums ${cls}`}
                 >
                   {i + 1}
                 </div>
@@ -55,8 +57,8 @@ export function GameControls({ onProbeResults }: GameControlsProps) {
           </div>
         </div>
         <div className="text-right">
-          <p className="text-[10px] 2xl:text-xs uppercase tracking-widest text-gray-200 mb-1">Score</p>
-          <p className="text-2xl 2xl:text-3xl font-bold text-primary-400 tabular-nums">
+          <p className="font-mono text-[10px] 2xl:text-xs uppercase tracking-[0.18em] text-starlight/45 mb-1.5">Score</p>
+          <p className="font-mono text-2xl 2xl:text-3xl font-semibold text-accent tabular-nums">
             {formatScore(totalScore)}
           </p>
         </div>
@@ -65,7 +67,7 @@ export function GameControls({ onProbeResults }: GameControlsProps) {
       {/* Scrollable middle: hints + test. The HUD above and Lock In below are
           pinned, so the primary action can never be pushed out of view. */}
       <div className="flex-1 min-h-0 overflow-y-auto">
-        <div className="px-5 2xl:px-6 py-4 border-b border-white/10">
+        <div className="px-5 2xl:px-6 py-4 border-b border-graticule/25">
           <HintPanel
             hints={revealedHints}
             totalHints={totalHints}
@@ -75,21 +77,21 @@ export function GameControls({ onProbeResults }: GameControlsProps) {
         </div>
 
         <div className="px-5 2xl:px-6 py-4 space-y-3">
-          <p className="text-[10px] 2xl:text-xs uppercase tracking-widest text-gray-200">Test your theory</p>
+          <p className="font-mono text-[10px] 2xl:text-xs uppercase tracking-[0.18em] text-starlight/45">Probe</p>
           <TestInput onProbeResults={onProbeResults} />
         </div>
       </div>
 
       {/* Lock-in button — pinned footer */}
-      <div className="shrink-0 px-5 2xl:px-6 py-4 2xl:py-5 border-t border-white/10">
+      <div className="shrink-0 px-5 2xl:px-6 py-4 2xl:py-5 border-t border-graticule/25">
         <button
           data-onboarding="lock-in-button"
           onClick={lockIn}
           disabled={!canLockIn}
-          className={`w-full py-2.5 2xl:py-3.5 rounded-xl text-sm 2xl:text-lg font-bold tracking-wide transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight
+          className={`w-full py-2.5 2xl:py-3.5 rounded text-sm 2xl:text-lg font-bold tracking-wide transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60
             ${canLockIn
-              ? 'bg-game-highlight hover:bg-red-600 text-white shadow-[0_0_20px_rgba(233,69,96,0.4)]'
-              : 'border border-gray-600 text-gray-500 cursor-not-allowed'
+              ? 'bg-alert hover:bg-alert/90 text-starlight'
+              : 'border border-graticule/50 text-starlight/30 cursor-not-allowed'
             }`}
         >
           Lock In Answer

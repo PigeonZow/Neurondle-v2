@@ -1,4 +1,5 @@
 import type { Config } from 'tailwindcss'
+import defaultTheme from 'tailwindcss/defaultTheme'
 
 const config: Config = {
   content: [
@@ -10,25 +11,23 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Game theme colors
-        primary: {
-          50: '#eff6ff',
-          100: '#dbeafe',
-          200: '#bfdbfe',
-          300: '#93c5fd',
-          400: '#60a5fa',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-          800: '#1e40af',
-          900: '#1e3a8a',
-        },
-        game: {
-          bg: '#1a1a2e',
-          surface: '#16213e',
-          accent: '#0f3460',
-          highlight: '#e94560',
-        },
+        // Design tokens (RGB triplet variables live in globals.css,
+        // hex mirrors in src/lib/theme.ts for the PIXI canvas)
+        ink: 'rgb(var(--ink) / <alpha-value>)',
+        chart: 'rgb(var(--chart) / <alpha-value>)',
+        graticule: 'rgb(var(--graticule) / <alpha-value>)',
+        starlight: 'rgb(var(--starlight) / <alpha-value>)',
+        accent: 'rgb(var(--accent) / <alpha-value>)',
+        'accent-deep': 'rgb(var(--accent-deep) / <alpha-value>)',
+        alert: 'rgb(var(--alert) / <alpha-value>)',
+        ember: 'rgb(var(--ember) / <alpha-value>)',
+        verdant: 'rgb(var(--verdant) / <alpha-value>)',
+        nebula: 'rgb(var(--nebula) / <alpha-value>)',
+      },
+      fontFamily: {
+        sans: ['var(--font-sans)', ...defaultTheme.fontFamily.sans],
+        mono: ['var(--font-mono)', ...defaultTheme.fontFamily.mono],
+        wordmark: ['var(--font-wordmark)', ...defaultTheme.fontFamily.sans],
       },
       animation: {
         'pin-drop': 'pinDrop 0.3s ease-out',

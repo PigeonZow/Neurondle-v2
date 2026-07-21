@@ -28,10 +28,10 @@ export function ConsentModal() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.98 }}
             transition={{ type: "spring", stiffness: 240, damping: 26 }}
-            className="relative flex flex-col w-full max-w-2xl max-h-[88vh] bg-game-surface rounded-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.6)] overflow-hidden ring-1 ring-white/5"
+            className="relative flex flex-col w-full max-w-2xl max-h-[88vh] bg-chart rounded-sm shadow-[0_20px_60px_-15px_rgba(0,0,0,0.6)] overflow-hidden ring-1 ring-graticule/40"
           >
             {/* signature accent strip */}
-            <div className="h-[2px] bg-gradient-to-r from-primary-500 via-primary-400 to-game-highlight" />
+            <div className="h-[2px] bg-gradient-to-r from-accent-deep via-accent to-alert" />
 
             {/* Header */}
             <div className="flex-shrink-0 px-7 pt-6 pb-5">
@@ -43,11 +43,11 @@ export function ConsentModal() {
                     className="h-8 shrink-0"
                   />
                   <div className="min-w-0 leading-none">
-                    <h2 className="text-xl font-bold tracking-tight leading-none">
-                      <span className="text-primary-400">Neuron</span>
-                      <span className="text-game-highlight">dle</span>
+                    <h2 className="font-wordmark text-xl font-bold tracking-tight leading-none">
+                      <span className="text-accent">Neuron</span>
+                      <span className="text-alert">dle</span>
                     </h2>
-                    <p className="text-xs text-gray-400 mt-1.5">
+                    <p className="text-xs text-starlight/60 mt-1.5">
                       Research Participation · Simon Fraser University
                     </p>
                   </div>
@@ -55,10 +55,10 @@ export function ConsentModal() {
 
                 <div className="flex items-start gap-2 shrink-0">
                   <div className="text-right">
-                    <p className="text-[10px] uppercase tracking-[0.18em] text-gray-200 font-mono">
+                    <p className="text-[10px] uppercase tracking-[0.18em] text-starlight/70 font-mono">
                       Study
                     </p>
-                    <p className="text-xs font-mono text-gray-300 mt-0.5">
+                    <p className="text-xs font-mono text-starlight/80 mt-0.5">
                       #30003279
                     </p>
                   </div>
@@ -66,7 +66,7 @@ export function ConsentModal() {
                     <button
                       onClick={closeModal}
                       aria-label="Close"
-                      className="ml-2 w-7 h-7 rounded-md text-gray-500 hover:text-white hover:bg-white/5 transition-colors flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight"
+                      className="ml-2 w-7 h-7 rounded-md text-starlight/40 hover:text-starlight hover:bg-starlight/5 transition-colors flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
                     >
                       <svg
                         width="14"
@@ -99,7 +99,7 @@ export function ConsentModal() {
                     discovery game.
                   </p>
                   <Callout>
-                    <span className="text-white font-medium">
+                    <span className="text-starlight font-medium">
                       The game functions identically whether you participate in research or not.
                     </span>{' '}
                     Your choice only affects whether we collect anonymous data about your gameplay. This consent dialog will take &lt; 2 minutes to read.
@@ -133,12 +133,12 @@ export function ConsentModal() {
                   </p>
 
                   <Callout className="mt-3">
-                    <p className="text-white font-medium mb-1.5">
+                    <p className="text-starlight font-medium mb-1.5">
                       What we{" "}
-                      <span className="text-game-highlight">do not</span>{" "}
+                      <span className="text-alert">do not</span>{" "}
                       collect:
                     </p>
-                    <ul className="space-y-1 text-gray-300 text-sm">
+                    <ul className="space-y-1 text-starlight/80 text-sm">
                       <Bullet>Any personally identifying information</Bullet>
                       <Bullet>
                         Your IP address or device fingerprinting beyond session
@@ -158,18 +158,18 @@ export function ConsentModal() {
                   </p>
 
                   <div className="mt-3">
-                    <p className="text-[11px] font-mono uppercase tracking-[0.18em] text-gray-200 mb-1.5">
+                    <p className="text-[11px] font-mono uppercase tracking-[0.18em] text-starlight/70 mb-1.5">
                       Withdrawal reference
                     </p>
-                    <div className="bg-game-bg rounded-lg border border-white/5 px-3 py-2.5 flex items-center justify-between gap-3">
-                      <code className="text-xs font-mono text-primary-300 break-all">
+                    <div className="bg-ink rounded border border-graticule/25 px-3 py-2.5 flex items-center justify-between gap-3">
+                      <code className="text-xs font-mono text-accent break-all">
                         {getSessionToken()}
                       </code>
-                      <span className="text-[10px] uppercase tracking-wider font-mono text-gray-200 shrink-0">
+                      <span className="text-[10px] uppercase tracking-wider font-mono text-starlight/70 shrink-0">
                         session
                       </span>
                     </div>
-                    <p className="text-[11px] text-gray-400 mt-1.5">
+                    <p className="text-[11px] text-starlight/60 mt-1.5">
                       This ID is also displayed in the bottom-right corner of
                       the game for future reference.
                     </p>
@@ -179,7 +179,7 @@ export function ConsentModal() {
                 {/* Section 04: Privacy & Data Security */}
                 <Section num="04" label="Privacy & Data Security">
                   <Heading>How will your privacy be protected?</Heading>
-                  <ul className="space-y-1.5 text-gray-300 text-sm">
+                  <ul className="space-y-1.5 text-starlight/80 text-sm">
                     <Bullet>
                       All data is collected anonymously — we cannot identify
                       individual participants
@@ -245,7 +245,7 @@ export function ConsentModal() {
                       </ContactRow>
                       <ContactRow label="Email">hreb@sfu.ca</ContactRow>
                       <ContactRow label="Phone">778-782-6593</ContactRow>
-                      <p className="text-[11px] text-gray-400 mt-2 leading-snug">
+                      <p className="text-[11px] text-starlight/60 mt-2 leading-snug">
                         Contact if you have concerns about your rights as a
                         research participant.
                       </p>
@@ -261,11 +261,11 @@ export function ConsentModal() {
             </div>
 
             {/* Footer */}
-            <div className="flex-shrink-0 px-7 py-4 border-t border-white/5 bg-game-surface">
+            <div className="flex-shrink-0 px-7 py-4 border-t border-graticule/25 bg-chart">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <button
                   onClick={() => setConsentStatus("declined")}
-                  className="px-4 py-2 rounded-lg text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight"
+                  className="px-4 py-2 rounded text-sm font-medium text-starlight/80 hover:text-starlight hover:bg-starlight/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
                 >
                   {alreadyDecided && consentStatus === "accepted"
                     ? "Opt out"
@@ -278,9 +278,9 @@ export function ConsentModal() {
                       type="checkbox"
                       checked={checked}
                       onChange={(e) => setChecked(e.target.checked)}
-                      className="w-4 h-4 rounded accent-primary-500 cursor-pointer"
+                      className="w-4 h-4 rounded accent-accent cursor-pointer"
                     />
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-starlight/60">
                       I have read all the above and am over 18
                     </span>
                   </label>
@@ -288,10 +288,10 @@ export function ConsentModal() {
                   <button
                     onClick={() => setConsentStatus("accepted")}
                     disabled={!checked}
-                    className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight ${
+                    className={`px-5 py-2 rounded text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 ${
                       checked
-                        ? "bg-primary-600 hover:bg-primary-500 text-white shadow-[0_0_0_1px_rgba(96,165,250,0.3)]"
-                        : "bg-white/5 text-gray-600 cursor-not-allowed"
+                        ? "bg-accent-deep hover:bg-accent-deep/90 text-starlight shadow-[0_0_0_1px_rgb(var(--accent)/0.3)]"
+                        : "bg-starlight/5 text-starlight/30 cursor-not-allowed"
                     }`}
                   >
                     {alreadyDecided && consentStatus === "declined"
@@ -320,11 +320,11 @@ function Section({
   return (
     <section className="scroll-mt-4">
       <div className="flex items-baseline gap-3 mb-3">
-        <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-gray-200">
-          {num} <span className="text-gray-700">/</span> {label}
+        <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-starlight/70">
+          {num} <span className="text-starlight/25">/</span> {label}
         </span>
       </div>
-      <div className="space-y-3 text-sm text-gray-300 leading-relaxed">
+      <div className="space-y-3 text-sm text-starlight/80 leading-relaxed">
         {children}
       </div>
     </section>
@@ -339,7 +339,7 @@ function Heading({
   className?: string;
 }) {
   return (
-    <h4 className={`text-base font-semibold text-white ${className}`}>
+    <h4 className={`text-base font-semibold text-starlight ${className}`}>
       {children}
     </h4>
   );
@@ -349,7 +349,7 @@ function Bullet({ children }: { children: React.ReactNode }) {
   return (
     <li className="flex gap-2.5">
       <span
-        className="mt-2 h-1 w-1 rounded-full bg-gray-600 shrink-0"
+        className="mt-2 h-1 w-1 rounded-full bg-starlight/40 shrink-0"
         aria-hidden
       />
       <span>{children}</span>
@@ -366,10 +366,10 @@ function Callout({
 }) {
   return (
     <div
-      className={`relative bg-game-bg/80 rounded-lg pl-4 pr-4 py-3 overflow-hidden ${className}`}
+      className={`relative bg-ink/80 rounded pl-4 pr-4 py-3 overflow-hidden ${className}`}
     >
-      <span className="absolute inset-y-0 left-0 w-[2px] bg-game-highlight" />
-      <div className="text-sm text-gray-300 leading-relaxed">{children}</div>
+      <span className="absolute inset-y-0 left-0 w-[2px] bg-alert" />
+      <div className="text-sm text-starlight/80 leading-relaxed">{children}</div>
     </div>
   );
 }
@@ -382,8 +382,8 @@ function ContactCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-game-bg/60 rounded-lg border border-white/5 p-3.5">
-      <p className="text-[10px] font-mono uppercase tracking-[0.16em] text-gray-200 mb-2">
+    <div className="bg-ink/60 rounded border border-graticule/25 p-3.5">
+      <p className="text-[10px] font-mono uppercase tracking-[0.16em] text-starlight/70 mb-2">
         {heading}
       </p>
       <div className="space-y-1 text-xs">{children}</div>
@@ -400,10 +400,10 @@ function ContactRow({
 }) {
   return (
     <div className="flex gap-2">
-      <span className="text-gray-200 w-12 shrink-0 font-mono text-[10px] uppercase tracking-wider pt-px">
+      <span className="text-starlight/70 w-12 shrink-0 font-mono text-[10px] uppercase tracking-wider pt-px">
         {label}
       </span>
-      <span className="text-gray-200">{children}</span>
+      <span className="text-starlight/70">{children}</span>
     </div>
   );
 }

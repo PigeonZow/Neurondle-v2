@@ -108,11 +108,6 @@ export function GameContainer() {
     [inspected]
   )
 
-  const handleInspectorPin = useCallback((point: UmapPoint) => {
-    umapRef.current?.pinAtPoint({ x: point.x, y: point.y })
-    setInspected(null)
-  }, [])
-
   const handleProbeResults = useCallback(
     (results: { index: number; maxValue: number }[], text: string) => {
       umapRef.current?.showProbeGlow(
@@ -144,8 +139,8 @@ export function GameContainer() {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="text-center">
-          <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-primary-500 border-t-transparent mx-auto" />
-          <p className="text-gray-400">Loading Neurondle...</p>
+          <div className="mb-4 h-12 w-12 animate-spin rounded-full border-2 border-accent border-t-transparent mx-auto" />
+          <p className="font-mono text-sm text-starlight/60">Loading Neurondle...</p>
         </div>
       </div>
     )
@@ -158,7 +153,7 @@ export function GameContainer() {
           <p className="text-red-400 mb-4">Error: {error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-primary-600 rounded hover:bg-primary-700"
+            className="px-4 py-2 bg-accent-deep hover:bg-accent-deep/90 text-starlight rounded font-semibold"
           >
             Retry
           </button>
@@ -201,7 +196,6 @@ export function GameContainer() {
         <NeuronInspector
           point={inspected}
           anchor={handleInspectorAnchor}
-          onPin={handleInspectorPin}
           onClose={() => setInspected(null)}
         />
       )}
@@ -228,17 +222,17 @@ export function GameContainer() {
         )}
       </AnimatePresence>
 
-      {/* Glow legend: says what the white halos encode, with a clear button */}
+      {/* Glow legend: says what the nebula halos encode, with a clear button */}
       {probeText && (
-        <div className="game-overlay fixed bottom-12 right-4 z-30 flex items-center gap-2 rounded-full bg-game-surface/90 backdrop-blur-md border border-white/10 shadow-lg pl-3 pr-1.5 py-1.5 text-xs whitespace-nowrap">
-          <span className="w-2.5 h-2.5 shrink-0 rounded-full bg-fuchsia-400 shadow-[0_0_6px_2px_rgba(217,70,239,0.45)]" />
-          <span className="text-gray-300">
-            glow: where <span className="text-white max-w-[10rem] truncate inline-block align-bottom">&ldquo;{probeText}&rdquo;</span> activates
+        <div className="game-overlay fixed bottom-12 right-4 z-30 flex items-center gap-2 rounded-full bg-chart/90 border border-graticule/40 shadow-lg pl-3 pr-1.5 py-1.5 text-xs whitespace-nowrap">
+          <span className="w-2.5 h-2.5 shrink-0 rounded-full bg-nebula shadow-[0_0_6px_2px_rgb(var(--nebula)/0.45)]" />
+          <span className="text-starlight/70">
+            glow: where <span className="text-starlight max-w-[10rem] truncate inline-block align-bottom">&ldquo;{probeText}&rdquo;</span> activates
           </span>
           <button
             onClick={handleClearProbeGlow}
             aria-label="Clear activation glow"
-            className="p-1 rounded-full text-gray-400 hover:text-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight"
+            className="p-1 rounded-full text-starlight/50 hover:text-starlight hover:bg-starlight/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

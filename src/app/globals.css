@@ -2,11 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Design tokens as RGB triplets so Tailwind can apply alpha modifiers
+   (bg-chart/90 etc.). Hex values mirrored in src/lib/theme.ts for PIXI.
+
+   Roles:
+     ink       — page + map ground
+     chart     — panel surfaces
+     graticule — hairlines, borders, grid
+     starlight — text
+     accent    — blue: interactive, score, data values
+     accent-deep — blue: solid button fills
+     alert     — red: lock-in, token highlights, search ring
+     ember     — amber: pin, search-filter glow
+     verdant   — green: revealed answer
+     nebula    — magenta: probe glow (activation evidence) */
 :root {
-  --game-bg: #0a0d1a;
-  --game-surface: #16213e;
-  --game-accent: #0f3460;
-  --game-highlight: #e94560;
+  --ink: 7 13 24;
+  --chart: 13 21 38;
+  --graticule: 65 82 122;
+  --starlight: 233 230 218;
+  --accent: 94 155 224;
+  --accent-deep: 59 111 196;
+  --alert: 226 83 104;
+  --ember: 237 180 88;
+  --verdant: 67 201 123;
+  --nebula: 217 70 239;
 }
 
 * {
@@ -19,8 +39,8 @@ html,
 body {
   max-width: 100vw;
   overflow-x: hidden;
-  background-color: var(--game-bg);
-  color: white;
+  background-color: rgb(var(--ink));
+  color: rgb(var(--starlight));
 }
 
 /* Ensure full-screen canvas */
@@ -44,7 +64,7 @@ body {
   pointer-events: auto;
 }
 
-/* Token highlighting */
+/* Token highlighting — alert red encodes activation strength */
 .token {
   display: inline;
   padding: 0 1px;
@@ -53,7 +73,7 @@ body {
 }
 
 .token-highlight {
-  background-color: rgba(59, 130, 246, var(--activation-opacity, 0.3));
+  background-color: rgb(var(--alert) / var(--activation-opacity, 0.3));
 }
 
 /* Scrollbar styling */
@@ -63,14 +83,14 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--game-surface);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--game-accent);
+  background: rgb(var(--graticule) / 0.5);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--game-highlight);
+  background: rgb(var(--graticule) / 0.8);
 }

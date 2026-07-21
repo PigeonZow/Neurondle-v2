@@ -108,16 +108,16 @@ export function TestInput({ onProbeResults }: TestInputProps) {
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleTest()}
           placeholder="Test custom activation..."
-          className="flex-1 bg-white/5 border border-white/10 hover:border-white/15 rounded-lg px-3 py-1.5 2xl:py-2 text-sm 2xl:text-base text-white placeholder-gray-400 focus:outline-none focus:border-primary-500/60 focus:bg-white/[0.07] focus-visible:ring-2 focus-visible:ring-primary-500/30 transition-colors"
+          className="flex-1 bg-ink/50 border border-graticule/40 hover:border-graticule/60 rounded px-3 py-1.5 2xl:py-2 text-sm 2xl:text-base text-starlight placeholder-starlight/35 focus:outline-none focus:border-accent/60 focus:bg-ink/70 focus-visible:ring-2 focus-visible:ring-accent/25 transition-colors"
         />
         <button
           onClick={handleTest}
           disabled={loading || !text.trim()}
           className={`
-            px-3 2xl:px-4 py-1.5 2xl:py-2 rounded-lg text-sm 2xl:text-base font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-highlight
+            px-3 2xl:px-4 py-1.5 2xl:py-2 rounded text-sm 2xl:text-base font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60
             ${loading || !text.trim()
-              ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-              : 'bg-primary-600 hover:bg-primary-700 text-white'
+              ? 'border border-graticule/40 text-starlight/30 cursor-not-allowed'
+              : 'bg-starlight/10 hover:bg-starlight/20 text-starlight'
             }
           `}
         >
@@ -127,10 +127,10 @@ export function TestInput({ onProbeResults }: TestInputProps) {
 
       {/* Result display */}
       {result && (
-        <div className="bg-white/5 rounded-lg p-2">
+        <div className="bg-ink/50 border border-graticule/25 rounded p-2">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-xs 2xl:text-sm text-gray-400">Custom text</span>
-            <span className="text-xs 2xl:text-sm font-mono text-primary-400">{maxActivation.toFixed(2)}</span>
+            <span className="text-xs 2xl:text-sm text-starlight/50">Custom text</span>
+            <span className="text-xs 2xl:text-sm font-mono text-accent">{maxActivation.toFixed(2)}</span>
           </div>
           <div className="flex flex-wrap gap-0.5">
             {result.tokens.map((t, i) => (
@@ -143,6 +143,11 @@ export function TestInput({ onProbeResults }: TestInputProps) {
             ))}
           </div>
           {/* <p className="text-[10px] text-gray-500 mt-1">magenta glow on the map = where this text activates</p> */}
+          {result.text.trimStart().startsWith('<bos>') && (
+            <p className="text-[10px] text-starlight/40 mt-1">
+              A leading &lt;bos&gt; is read as the model&apos;s start-of-sequence token, so it isn&apos;t shown above.
+            </p>
+          )}
         </div>
       )}
     </div>
