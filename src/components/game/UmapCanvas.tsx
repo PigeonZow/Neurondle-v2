@@ -365,7 +365,7 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
       const overlayContainer = new PIXI.Container()
 
       const TEXTURE_RADIUS = 16
-      const DISPLAY_RADIUS = 2.5
+      const DISPLAY_RADIUS = 1.8
       const SPRITE_SCALE = DISPLAY_RADIUS / TEXTURE_RADIUS
 
       const baseGraphics = new PIXI.Graphics()
