@@ -21,6 +21,7 @@ const config: Config = {
         'accent-deep': 'rgb(var(--accent-deep) / <alpha-value>)',
         alert: 'rgb(var(--alert) / <alpha-value>)',
         ember: 'rgb(var(--ember) / <alpha-value>)',
+        beacon: 'rgb(var(--beacon) / <alpha-value>)',
         verdant: 'rgb(var(--verdant) / <alpha-value>)',
         nebula: 'rgb(var(--nebula) / <alpha-value>)',
       },

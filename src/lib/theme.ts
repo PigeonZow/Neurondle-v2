@@ -13,7 +13,8 @@ export const palette = {
   accent: '#5E9BE0', // blue: interactive, score, data values
   accentDeep: '#3B6FC4', // blue: solid button fills
   alert: '#E25368', // red: lock-in, token highlights, search ring
-  ember: '#EDB458', // amber: pin, search-filter glow
+  ember: '#EDB458', // amber: the pin reticle
+  beacon: '#3EC6C9', // teal: search-filter match glow
   verdant: '#43C97B', // green: revealed answer
   nebula: '#D946EF', // magenta: probe glow (activation evidence)
 } as const
@@ -24,6 +25,7 @@ export const mapColors = {
   graticule: 0x41527a,
   starlight: 0xe9e6da,
   ember: 0xedb458,
+  beacon: 0x3ec6c9,
   alert: 0xe25368,
   verdant: 0x43c97b,
   nebula: 0xd946ef,

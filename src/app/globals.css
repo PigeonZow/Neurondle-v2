@@ -13,7 +13,8 @@
      accent    — blue: interactive, score, data values
      accent-deep — blue: solid button fills
      alert     — red: lock-in, token highlights, search ring
-     ember     — amber: pin, search-filter glow
+     ember     — amber: the pin reticle
+     beacon    — teal: search-filter match glow
      verdant   — green: revealed answer
      nebula    — magenta: probe glow (activation evidence) */
 :root {
@@ -25,6 +26,7 @@
   --accent-deep: 59 111 196;
   --alert: 226 83 104;
   --ember: 237 180 88;
+  --beacon: 62 198 201;
   --verdant: 67 201 123;
   --nebula: 217 70 239;
 }

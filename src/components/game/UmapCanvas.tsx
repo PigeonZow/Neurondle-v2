@@ -375,7 +375,7 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
 
       const highlightGraphics = new PIXI.Graphics()
       highlightGraphics.circle(0, 0, TEXTURE_RADIUS * 1.5)
-      highlightGraphics.fill({ color: pal.ember, alpha: 0.9 })
+      highlightGraphics.fill({ color: pal.beacon, alpha: 0.9 })
       const highlightTexture = app.renderer.generateTexture(highlightGraphics)
       const HIGHLIGHT_SPRITE_SCALE = (DISPLAY_RADIUS * 1.5) / (TEXTURE_RADIUS * 1.5)
 
@@ -485,8 +485,8 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
         } else {
           // Reticle: ring + four crosshair ticks + a center point. The point
           // anchors the mark when the guess is in empty space; a snapped dot
-          // shows through inside the ring. Starlight over an ink casing so it
-          // stays legible on the amber filter glow (which owns that color).
+          // shows through inside the ring. Amber over an ink casing — the
+          // filter glow is teal, so the warm mark owns the foreground.
           pinSprite = new PIXI.Graphics()
           const reticlePath = (g: any) => {
             g.circle(0, 0, 9)
@@ -498,11 +498,11 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
           reticlePath(pinSprite)
           pinSprite.stroke({ color: pal.ink, width: 3.5, alpha: 0.9 })
           reticlePath(pinSprite)
-          pinSprite.stroke({ color: pal.starlight, width: 1.5 })
+          pinSprite.stroke({ color: pal.ember, width: 1.5 })
           pinSprite.circle(0, 0, 2.4)
           pinSprite.fill({ color: pal.ink, alpha: 0.9 })
           pinSprite.circle(0, 0, 1.5)
-          pinSprite.fill({ color: pal.starlight })
+          pinSprite.fill({ color: pal.ember })
           pinSprite.x = sx
           pinSprite.y = sy
           pinSprite.scale.set(1 / viewport.scaled)
