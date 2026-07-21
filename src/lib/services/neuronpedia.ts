@@ -174,18 +174,25 @@ export async function exportExplanations(config: SAEConfig): Promise<{
 }
 
 /**
- * Filter out BOS token from activation response
+ * Filter the auto-prepended BOS token from an activation response.
+ *
+ * Only a LEADING <bos> is ever removed — that's the one the tokenizer
+ * prepends. And when the user's own text starts with "<bos>", the leading
+ * token is (or is merged with) theirs, so it is kept: hiding it would make
+ * their input silently vanish from the result. The ambiguity is inherent —
+ * "<bos>" typed as text tokenizes to the real special token — so the rule
+ * is: strip only what we're confident the user didn't type.
  */
-export function filterBosToken(response: ActivationResponse): ActivationResponse {
-  const bosIndex = response.tokens.findIndex(t => t === '<bos>')
-
-  if (bosIndex === -1) {
-    return response
-  }
+export function filterBosToken(
+  response: ActivationResponse,
+  userText?: string
+): ActivationResponse {
+  if (response.tokens[0] !== '<bos>') return response
+  if (userText?.trimStart().startsWith('<bos>')) return response
 
   return {
     ...response,
-    tokens: response.tokens.filter((_, i) => i !== bosIndex),
-    values: response.values.filter((_, i) => i !== bosIndex),
+    tokens: response.tokens.slice(1),
+    values: response.values.slice(1),
   }
 }

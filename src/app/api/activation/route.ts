@@ -27,8 +27,8 @@ export async function POST(request: NextRequest) {
     // Call Neuronpedia API
     const response = await testActivation(config, featureIndex, text)
 
-    // Filter out BOS token
-    const filtered = filterBosToken(response)
+    // Filter the auto-prepended BOS token (kept if the user typed it themselves)
+    const filtered = filterBosToken(response, typeof text === 'string' ? text : undefined)
 
     // Persist research data for this probe. We collect this for EVERY run;
     // whether it's usable for research is decided later via the session's
