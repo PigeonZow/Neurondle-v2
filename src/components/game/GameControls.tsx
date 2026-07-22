@@ -1,6 +1,8 @@
 'use client'
 
+import { Info } from 'lucide-react'
 import { useGameStore, selectCurrentRound, selectRevealedHints } from '@/lib/store/gameStore'
+import { useFieldGuideStore } from '@/lib/store/fieldGuideStore'
 import { TestInput } from './TestInput'
 import { HintPanel } from './HintPanel'
 import { CornerTicks } from '@/components/ui/CornerTicks'
@@ -18,6 +20,7 @@ export function GameControls({ onProbeResults }: GameControlsProps) {
   const currentRoundIndex = useGameStore(state => state.currentRound)
   const totalScore = useGameStore(state => state.totalScore)
   const rounds = useGameStore(state => state.rounds)
+  const openGuide = useFieldGuideStore(state => state.openGuide)
 
   if (!currentRound) return null
 
@@ -77,7 +80,16 @@ export function GameControls({ onProbeResults }: GameControlsProps) {
         </div>
 
         <div className="px-5 2xl:px-6 py-4 space-y-3">
-          <p className="font-mono text-[10px] 2xl:text-xs uppercase tracking-[0.18em] text-starlight/45">Probe</p>
+          <p className="flex items-center gap-1.5 font-mono text-[10px] 2xl:text-xs uppercase tracking-[0.18em] text-starlight/45">
+            Probe
+            <button
+              onClick={() => openGuide('activations')}
+              aria-label="How activations work"
+              className="text-starlight/35 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 rounded"
+            >
+              <Info className="w-3 h-3 2xl:w-3.5 2xl:h-3.5" />
+            </button>
+          </p>
           <TestInput onProbeResults={onProbeResults} />
         </div>
       </div>

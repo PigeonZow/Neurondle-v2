@@ -1,6 +1,8 @@
 'use client'
 
+import { BookOpen } from 'lucide-react'
 import { useOnboardingStore } from '@/lib/store/onboardingStore'
+import { useFieldGuideStore } from '@/lib/store/fieldGuideStore'
 import { FeatureSearch } from './FeatureSearch'
 import type { UmapPoint } from '@/types'
 
@@ -22,6 +24,7 @@ export function GameHeader({
   onJumpToPoint,
 }: GameHeaderProps) {
   const triggerReplay = useOnboardingStore(state => state.triggerReplay)
+  const openGuide = useFieldGuideStore(state => state.openGuide)
 
   return (
     <header className="game-overlay fixed top-0 inset-x-0 z-40 h-14 2xl:h-16 min-[1920px]:h-20 bg-chart/90 border-b border-graticule/35 shadow-lg">
@@ -42,14 +45,24 @@ export function GameHeader({
           />
         </div>
 
-        <button
-          onClick={triggerReplay}
-          className="flex items-center gap-2 px-3 2xl:px-4 py-1.5 2xl:py-2 rounded text-sm 2xl:text-base text-starlight/70 hover:text-starlight hover:bg-starlight/5 border border-graticule/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
-          aria-label="Replay tutorial"
-        >
-          <span className="font-bold">?</span>
-          <span>Tutorial</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => openGuide()}
+            className="flex items-center gap-2 px-3 2xl:px-4 py-1.5 2xl:py-2 rounded text-sm 2xl:text-base text-starlight/70 hover:text-starlight hover:bg-starlight/5 border border-graticule/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
+            aria-label="Open field guide"
+          >
+            <BookOpen className="w-4 h-4" />
+            <span>What is this?</span>
+          </button>
+          <button
+            onClick={triggerReplay}
+            className="flex items-center gap-2 px-3 2xl:px-4 py-1.5 2xl:py-2 rounded text-sm 2xl:text-base text-starlight/70 hover:text-starlight hover:bg-starlight/5 border border-graticule/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
+            aria-label="Replay tutorial"
+          >
+            <span className="font-bold">?</span>
+            <span>Tutorial</span>
+          </button>
+        </div>
       </div>
     </header>
   )

@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { CornerTicks } from '@/components/ui/CornerTicks'
+import { useFieldGuideStore } from '@/lib/store/fieldGuideStore'
 import { formatScore, formatDistance, getScoreMessage } from '@/lib/services/scoring'
 
 interface ScoreRevealProps {
@@ -13,6 +14,7 @@ interface ScoreRevealProps {
 
 export function ScoreReveal({ score, distance, groundTruth, onContinue }: ScoreRevealProps) {
   const { message } = getScoreMessage(score)
+  const openGuide = useFieldGuideStore(state => state.openGuide)
 
   return (
     <div className="relative bg-chart/95 rounded-sm border border-graticule/35 shadow-2xl p-5 2xl:p-6 text-center">
@@ -61,6 +63,12 @@ export function ScoreReveal({ score, distance, groundTruth, onContinue }: ScoreR
       >
         <p className="font-mono text-xs text-starlight/45 mb-1">auto-label:</p>
         <p className="text-base 2xl:text-lg font-medium text-starlight">{groundTruth}</p>
+        <button
+          onClick={() => openGuide('why-neurondle')}
+          className="mt-2 text-xs text-starlight/50 hover:text-accent underline decoration-dotted underline-offset-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 rounded"
+        >
+          How was this label made?
+        </button>
       </motion.div>
 
       <motion.button

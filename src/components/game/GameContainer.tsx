@@ -12,6 +12,7 @@ import { ScoreReveal } from './ScoreReveal'
 import { ConsentModal } from '@/components/ConsentModal'
 import { ConsentBadge } from '@/components/ConsentBadge'
 import { OnboardingFlow } from '@/components/OnboardingFlow'
+import { FieldGuide } from '@/components/FieldGuide'
 import { useConsentStore } from '@/lib/store/consentStore'
 import { ensureSession, persistSessionConsent } from '@/lib/services/sessions'
 import type { Puzzle, UmapPoint } from '@/types'
@@ -169,6 +170,7 @@ export function GameContainer() {
       <ConsentModal />
       <ConsentBadge />
       <OnboardingFlow />
+      <FieldGuide />
 
       <UmapCanvas
         ref={umapRef}
