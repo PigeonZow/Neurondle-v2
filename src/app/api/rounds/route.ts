@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { sessionId, gameId, puzzleId, roundNumber, pinX, pinY, distance, score } = body
+    const { sessionId, gameId, puzzleId, roundNumber, pinX, pinY, distance, score, hintsUsed, hintsAvailable } = body
 
     if (!sessionId || !puzzleId || !roundNumber || pinX === undefined || pinY === undefined) {
       return NextResponse.json(
@@ -36,6 +36,8 @@ export async function POST(request: NextRequest) {
         pin_y: pinY,
         distance,
         score,
+        hints_used: hintsUsed ?? null,
+        hints_available: hintsAvailable ?? null,
       })
       .select()
       .single()

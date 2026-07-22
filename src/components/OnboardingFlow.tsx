@@ -6,6 +6,7 @@ import { Mouse, Hand, ArrowRight, Check } from 'lucide-react'
 import { CornerTicks } from '@/components/ui/CornerTicks'
 import { useConsentStore } from '@/lib/store/consentStore'
 import { useOnboardingStore } from '@/lib/store/onboardingStore'
+import { useFieldGuideStore } from '@/lib/store/fieldGuideStore'
 
 const STORAGE_KEY = 'neurondle-onboarding-v1'
 const TOOLTIP_W = 320
@@ -16,7 +17,7 @@ const STEPS = [
   {
     selector: '[data-onboarding="umap-canvas"]',
     title: 'The map',
-    body: 'Each dot is one neuron. Together they form a map of the concepts this AI recognizes.',
+    body: null, // step 0 renders its own centered card below
   },
   {
     selector: '[data-onboarding="hint-panel"]',
@@ -36,7 +37,7 @@ const STEPS = [
   {
     selector: '[data-onboarding="lock-in-button"]',
     title: 'Lock in',
-    body: 'Closer pins earn higher scores.',
+    body: 'When you\'re ready to guess, click here. Closer pins earn higher scores.',
   },
 ]
 
@@ -83,26 +84,38 @@ function tooltipStyle(rect: DOMRect | null, estHeight: number = TOOLTIP_H): Reac
 
   const vpW = window.innerWidth
   const vpH = window.innerHeight
-  const spaceAbove = rect.top
-  const spaceBelow = vpH - rect.bottom
-  const left = Math.max(8, Math.min(rect.left, vpW - TOOLTIP_W - 8))
 
-  if (spaceAbove >= estHeight + GAP) {
-    // Anchor to `bottom` so actual render height never overlaps the target,
-    // regardless of how many lines the tooltip content wraps to.
-    return { bottom: `${vpH - rect.top + GAP}px`, left: `${left}px` }
+  // A target hugging the horizontal center (e.g. the top search bar) has no
+  // side "facing the center" — put the card below it (or above, for a
+  // bottom-half target) instead, centered on the target.
+  const centerX = rect.left + rect.width / 2
+  if (Math.abs(centerX - vpW / 2) < vpW / 6) {
+    const left = Math.max(8, Math.min(centerX - TOOLTIP_W / 2, vpW - TOOLTIP_W - 8))
+    if (rect.top + rect.height / 2 <= vpH / 2) {
+      return { top: `${Math.min(rect.bottom + GAP, vpH - estHeight - 8)}px`, left: `${left}px` }
+    }
+    return { bottom: `${Math.max(8, vpH - rect.top + GAP)}px`, left: `${left}px` }
   }
 
-  // Not enough room above — place below. If below also can't fully fit,
-  // still anchor to top and let the natural document flow handle overflow
-  // (better than letting the top get clipped).
-  if (spaceBelow >= estHeight + GAP || spaceBelow >= spaceAbove) {
-    return { top: `${Math.max(8, rect.bottom + GAP)}px`, left: `${left}px` }
-  }
+  // Beside the target (never above/below), on the side facing the screen
+  // center, so the card leans into the map rather than the screen edge.
+  const preferRight = centerX <= vpW / 2
+  const fitsRight = rect.right + GAP + TOOLTIP_W <= vpW - 8
+  const fitsLeft = rect.left - GAP - TOOLTIP_W >= 8
+  const side = preferRight ? (fitsRight ? 'right' : 'left') : (fitsLeft ? 'left' : 'right')
+  const left = side === 'right'
+    ? Math.min(rect.right + GAP, vpW - TOOLTIP_W - 8)
+    : Math.max(8, rect.left - GAP - TOOLTIP_W)
 
-  // Above gives more room than below even though neither fully fits.
-  // Pin to top of viewport so the head of the tooltip stays visible.
-  return { top: '8px', left: `${left}px` }
+  // Vertical nudge toward the center: a target in the top half anchors the
+  // card to its top edge and flows down; a bottom-half target anchors to its
+  // bottom edge and flows up (e.g. a bottom-left target gets the card at its
+  // top-right). Anchoring via `bottom` keeps the card's growth pointed at the
+  // center regardless of how many lines the content wraps to.
+  if (rect.top + rect.height / 2 <= vpH / 2) {
+    return { top: `${Math.min(Math.max(8, rect.top), vpH - estHeight - 8)}px`, left: `${left}px` }
+  }
+  return { bottom: `${Math.max(8, vpH - rect.bottom)}px`, left: `${left}px` }
 }
 
 function StepDots({ current, total }: { current: number; total: number }) {
@@ -173,6 +186,8 @@ export function OnboardingFlow() {
     resetReplay,
   } = useOnboardingStore()
 
+  const openGuide = useFieldGuideStore((s) => s.openGuide)
+
   const [mounted, setMounted] = useState(false)
   const [phase, setPhase] = useState<Phase>('done')
   const [step, setStep] = useState(0)
@@ -229,7 +244,11 @@ export function OnboardingFlow() {
 
   useEffect(() => {
     if (phase === 'done') return
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') handleSkip() }
+    const onKey = (e: KeyboardEvent) => {
+      // When the field guide is open on top of the tour, Escape belongs to
+      // the guide — don't also skip the tutorial underneath.
+      if (e.key === 'Escape' && !useFieldGuideStore.getState().isOpen) handleSkip()
+    }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [phase, handleSkip])
@@ -266,15 +285,9 @@ export function OnboardingFlow() {
 
           <h2 className="font-wordmark text-xl font-bold mb-4"><span className="text-accent">Neuron</span><span className="text-alert">dle</span></h2>
           <div className="space-y-3 mb-6">
-            {/* <p className="text-sm text-starlight/80 leading-relaxed">
-              Three rounds. One mystery neuron each. Pin it on the map.
-            </p> */}
             <p className="text-sm text-starlight/80 leading-relaxed">
-              Inside every AI are thousands of "neurons". Each one is tuned to a single concept: a place, a word, a pattern. You&rsquo;ll see one per round. Identify the concept, then place a pin on its location on the map.
+              An AI&rsquo;s raw parts are tangled. Researchers untangled them into thousands of &ldquo;neurons&rdquo;, each tending to respond to one concept. You&rsquo;ll see one per round. Identify the concept, then place a pin to guess on its location on the map.
             </p>
-            {/* <p className="text-sm text-starlight/80 leading-relaxed">
-              Fewer hints, higher score.
-            </p> */}
           </div>
           <div className="flex items-center justify-between">
             <button
@@ -300,15 +313,6 @@ export function OnboardingFlow() {
   if (step === 0) {
     return createPortal(
       <div className="fixed inset-0 z-[10001] pointer-events-none">
-        <div
-          className="absolute inset-0"
-          style={{
-            background: 'radial-gradient(ellipse at 50% 50%, transparent 32%, rgba(0,0,0,0.62) 82%)',
-            pointerEvents: 'none',
-          }}
-          aria-hidden
-        />
-
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div
             className="relative bg-chart border border-graticule/40 rounded-sm shadow-2xl pointer-events-auto"
@@ -322,7 +326,14 @@ export function OnboardingFlow() {
               <p className="text-base font-bold text-starlight leading-snug pr-6">The map</p>
 
               <p className="text-sm text-starlight/80 leading-relaxed">
-                Every dot is a neuron. The whole space is a map of what this AI has learned to recognize.
+                Every dot is one neuron. On this map there are 16,384 of them, read from one layer of{' '}
+                <button
+                  onClick={() => openGuide('what-youre-looking-at')}
+                  className="underline decoration-dotted underline-offset-2 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 rounded"
+                >
+                  a real AI
+                </button>
+                . Nearby dots tend to respond to similar things.
               </p>
 
               <div className="flex gap-3 pt-0.5">
@@ -402,7 +413,7 @@ export function OnboardingFlow() {
                 Highlighted words are where the neuron activated in real text. Each one is a clue to the concept.
               </p>
               <p className="text-sm text-starlight/80 leading-relaxed">
-                Reveal more hints for stronger evidence. Every hint costs points.
+                Use hints to get more highlighted words.
               </p>
             </div>
           ) : (

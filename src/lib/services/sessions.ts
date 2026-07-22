@@ -179,6 +179,8 @@ export async function persistRoundAttempt(input: {
   pinY: number
   distance: number
   score: number
+  hintsUsed: number
+  hintsAvailable: number
 }): Promise<void> {
   try {
     await fetch('/api/rounds', {

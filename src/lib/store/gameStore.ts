@@ -113,6 +113,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
         pinY: round.pin.y,
         distance,
         score,
+        hintsUsed: round.hintsRevealed,
+        hintsAvailable: round.puzzle.hints.length,
       })
       // Keep the session-level running total / current round in sync.
       void persistSessionProgress({

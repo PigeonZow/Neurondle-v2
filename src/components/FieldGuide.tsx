@@ -154,7 +154,7 @@ export function FieldGuide() {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.15 }}
           onClick={closeGuide}
-          className="fixed inset-0 z-[9990] flex items-center justify-center bg-ink/80 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-[10002] flex items-center justify-center bg-ink/80 backdrop-blur-sm p-4"
         >
           <motion.div
             initial={{ opacity: 0, y: 16, scale: 0.99 }}
