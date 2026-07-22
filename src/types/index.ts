@@ -42,6 +42,18 @@ export interface RoundState {
   distance: number | null
   hintsRevealed: number
   activationTests: ActivationTest[]
+  labelVerdict: LabelVerdict | null
+}
+
+// Player's take on the auto-label after the reveal
+export type LabelVerdict = 'fits' | 'off' | 'unsure'
+
+// Community aggregates for one puzzle (all players, all sessions)
+export interface PuzzleStats {
+  attempts: number
+  avgScore: number | null
+  closeOrBetterPct: number | null // share of attempts scoring >= 7000 ('Close')
+  verdicts: { fits: number; off: number; unsure: number; total: number }
 }
 
 export interface Point {

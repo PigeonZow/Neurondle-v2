@@ -109,10 +109,6 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
     point: null,
   })
 
-  // Chart furniture: scale bar (recomputed on zoom) + live cursor coordinates
-  const [scaleBar, setScaleBar] = useState<{ px: number; units: number } | null>(null)
-  const [cursor, setCursor] = useState<{ x: number; y: number } | null>(null)
-
   // Tooltip shown programmatically (jump-to-match) rather than by hover. It
   // survives mouse movement over the header controls so repeated ‹ › clicks
   // don't dismiss it; hovering the map hands control back to normal hover.
@@ -217,7 +213,6 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
 
     const coords = pixiRef.current.getWorldCoords(e.clientX, e.clientY)
     if (!coords) return
-    setCursor({ x: coords.x, y: coords.y })
 
     const { scale, offsetX, offsetY, spatialIndex } = pixiRef.current
     const screenX = coords.x * scale + offsetX
@@ -450,17 +445,8 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
         drawGraticule()
       }
 
-      // Scale bar: always the width of one grid cell, so the bar doubles
-      // as the grid's legend.
-      const updateScaleBar = () => {
-        const units = gridUnits()
-        setScaleBar({ px: units * scale * viewport.scaled, units })
-      }
-
       viewport.on('zoomed', updateScalesOnZoom)
       viewport.on('zoomed-end', updateScalesOnZoom)
-      viewport.on('zoomed', updateScaleBar)
-      viewport.on('zoomed-end', updateScaleBar)
       viewport.on('moved', drawGraticule)
       updateScalesOnZoom()
 
@@ -554,7 +540,6 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
       viewport.on('pointermove', onPointerMove)
 
       resetView()
-      updateScaleBar()
 
       // Redraw the player's pin after a theme re-init (the store keeps it;
       // the sprite does not survive the rebuild)
@@ -798,27 +783,6 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
   return (
     <>
       <div ref={containerRef} className="fixed inset-0" data-onboarding="umap-canvas" />
-
-      {/* Chart furniture: scale bar + cursor coordinates, bottom center.
-          Deliberately NOT .game-overlay — fully click-through. */}
-      {scaleBar && (
-        <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-20 pointer-events-none flex items-end gap-5 font-mono text-[10px] text-starlight/60 select-none">
-          <div className="flex flex-col items-center gap-1">
-            <span className="tabular-nums leading-none">
-              {scaleBar.units} {scaleBar.units === 1 ? 'unit' : 'units'}
-            </span>
-            <div
-              style={{ width: Math.round(scaleBar.px) }}
-              className="h-[5px] border-l border-r border-b border-starlight/50"
-            />
-          </div>
-          {cursor && (
-            <span className="tabular-nums leading-none pb-[1px]">
-              x {cursor.x.toFixed(2)} &middot; y {cursor.y.toFixed(2)}
-            </span>
-          )}
-        </div>
-      )}
 
       {/* Map dot hover tooltip — positioned above-right of cursor so the dot stays visible */}
       {tooltip.visible && tooltip.point && consentStatus !== 'pending' && onboardingStatus !== 'in_progress' && (

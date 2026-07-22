@@ -1,7 +1,7 @@
 import { create } from 'zustand'
-import type { GameState, RoundState, Puzzle, Point, ActivationTest } from '@/types'
+import type { GameState, RoundState, Puzzle, Point, ActivationTest, LabelVerdict } from '@/types'
 import { calculateDistance, calculateScore } from '@/lib/services/scoring'
-import { persistRoundAttempt, persistSessionProgress } from '@/lib/services/sessions'
+import { persistRoundAttempt, persistSessionProgress, persistLabelVerdict } from '@/lib/services/sessions'
 
 interface GameStore extends GameState {
   // Backend session id for this run (null until ensureSession resolves)
@@ -15,6 +15,7 @@ interface GameStore extends GameState {
   lockIn: () => void
   revealHint: () => void
   addActivationTest: (test: ActivationTest) => void
+  submitLabelVerdict: (verdict: LabelVerdict, suggestedLabel?: string) => void
   nextRound: () => void
   reset: () => void
 }
@@ -28,6 +29,7 @@ const initialRoundState = (puzzle: Puzzle): RoundState => ({
   distance: null,
   hintsRevealed: 1, // Show first hint by default
   activationTests: [],
+  labelVerdict: null,
 })
 
 export const useGameStore = create<GameStore>((set, get) => ({
@@ -153,6 +155,33 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }
 
     set({ rounds: updatedRounds })
+  },
+
+  // Record the player's take on the auto-label. Called on the first verdict
+  // tap, and again (same verdict) if they follow up with a suggested label.
+  submitLabelVerdict: (verdict, suggestedLabel) => {
+    const { currentRound, rounds, sessionId, gameId } = get()
+    const round = rounds[currentRound]
+
+    if (!round || !round.confirmed) return
+
+    const updatedRounds = [...rounds]
+    updatedRounds[currentRound] = {
+      ...round,
+      labelVerdict: verdict,
+    }
+    set({ rounds: updatedRounds })
+
+    if (sessionId && !round.puzzle.id.startsWith('mock')) {
+      void persistLabelVerdict({
+        sessionId,
+        gameId,
+        puzzleId: round.puzzle.id,
+        roundNumber: round.puzzle.roundNumber,
+        verdict,
+        suggestedLabel,
+      })
+    }
   },
 
   // Move to next round

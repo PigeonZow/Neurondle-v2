@@ -7,12 +7,14 @@ import { TestInput } from './TestInput'
 import { HintPanel } from './HintPanel'
 import { CornerTicks } from '@/components/ui/CornerTicks'
 import { formatScore } from '@/lib/services/scoring'
+import type { PuzzleStats } from '@/types'
 
 interface GameControlsProps {
   onProbeResults: (results: { index: number; maxValue: number }[], text: string) => void
+  stats: PuzzleStats | null
 }
 
-export function GameControls({ onProbeResults }: GameControlsProps) {
+export function GameControls({ onProbeResults, stats }: GameControlsProps) {
   const currentRound = useGameStore(selectCurrentRound)
   const revealedHints = useGameStore(selectRevealedHints)
   const lockIn = useGameStore(state => state.lockIn)
@@ -65,6 +67,36 @@ export function GameControls({ onProbeResults }: GameControlsProps) {
             {formatScore(totalScore)}
           </p>
         </div>
+      </div>
+
+      {/* Mystery title: resolves to the auto-labeler's claim after lock-in */}
+      <div className="shrink-0 px-5 2xl:px-6 py-3 2xl:py-4 border-b border-graticule/25">
+        {phase === 'reveal' ? (
+          <>
+            <p className="font-mono text-[10px] 2xl:text-xs uppercase tracking-[0.18em] text-starlight/45 mb-1">auto-label:</p>
+            <p className="text-sm 2xl:text-base font-medium text-starlight leading-snug">{puzzle.groundTruthLabel}</p>
+          </>
+        ) : (
+          <>
+            <p className="font-mono text-[10px] 2xl:text-xs uppercase tracking-[0.18em] text-starlight/45 mb-1">Target</p>
+            <p className="text-sm 2xl:text-base font-medium text-starlight">Mystery neuron #{puzzle.roundNumber}</p>
+          </>
+        )}
+
+        {/* Community difficulty context — so a low score reads as "this one
+            is hard", not "I'm bad at this" */}
+        {stats && stats.attempts > 0 && (
+          <div className="mt-2 space-y-0.5">
+            <p className="font-mono text-[11px] 2xl:text-xs text-starlight/50">
+              {stats.avgScore !== null && <>avg score: {formatScore(stats.avgScore)}</>}
+            </p>
+            {stats.closeOrBetterPct !== null && (
+              <p className="font-mono text-[11px] 2xl:text-xs text-starlight/50">
+                {stats.closeOrBetterPct}% of players landed &ldquo;Close&rdquo; or better
+              </p>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Scrollable middle: hints + test. The HUD above and Lock In below are

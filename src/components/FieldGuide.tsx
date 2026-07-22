@@ -63,7 +63,7 @@ const SECTIONS: GuideSection[] = [
   {
     id: 'why-neurondle',
     num: '06',
-    title: 'Why this game exists',
+    title: 'Why does this game exist?',
     lay: `${L2} ${L4} ${L1}`,
     deep: [`${L3} ${L1}`, `${L2} ${L4}`],
   },

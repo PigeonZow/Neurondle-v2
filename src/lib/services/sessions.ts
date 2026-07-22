@@ -145,6 +145,29 @@ export async function persistSessionProgress(input: {
 }
 
 /**
+ * Record a verdict on the auto-label (append-only; a follow-up call with a
+ * suggested label inserts a second row — analysis takes the latest).
+ */
+export async function persistLabelVerdict(input: {
+  sessionId: string
+  gameId: string | null
+  puzzleId: string
+  roundNumber: number
+  verdict: 'fits' | 'off' | 'unsure'
+  suggestedLabel?: string
+}): Promise<void> {
+  try {
+    await fetch('/api/verdicts', {
+      method: 'POST',
+      headers: sessionHeaders(),
+      body: JSON.stringify(input),
+    })
+  } catch (error) {
+    console.error('persistLabelVerdict failed:', error)
+  }
+}
+
+/**
  * Record a single locked-in guess.
  */
 export async function persistRoundAttempt(input: {

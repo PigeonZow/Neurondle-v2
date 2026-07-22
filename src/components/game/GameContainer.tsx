@@ -15,7 +15,7 @@ import { OnboardingFlow } from '@/components/OnboardingFlow'
 import { FieldGuide } from '@/components/FieldGuide'
 import { useConsentStore } from '@/lib/store/consentStore'
 import { ensureSession, persistSessionConsent } from '@/lib/services/sessions'
-import type { Puzzle, UmapPoint } from '@/types'
+import type { Puzzle, PuzzleStats, UmapPoint } from '@/types'
 
 export function GameContainer() {
   const [loading, setLoading] = useState(true)
@@ -25,6 +25,7 @@ export function GameContainer() {
   const [matchCursor, setMatchCursor] = useState(-1)
   const [inspected, setInspected] = useState<UmapPoint | null>(null)
   const [probeText, setProbeText] = useState<string | null>(null)
+  const [puzzleStats, setPuzzleStats] = useState<PuzzleStats | null>(null)
 
   const umapRef = useRef<UmapCanvasRef>(null)
 
@@ -103,6 +104,20 @@ export function GameContainer() {
     setInspected(null)
     setProbeText(null)
   }, [currentRoundIndex])
+
+  // Community stats for the current puzzle (difficulty + label consensus).
+  // Best-effort: missing stats just hide the displays.
+  const puzzleId = currentRound?.puzzle.id
+  useEffect(() => {
+    setPuzzleStats(null)
+    if (!puzzleId || puzzleId.startsWith('mock')) return
+    let cancelled = false
+    fetch(`/api/puzzles/stats?puzzleId=${encodeURIComponent(puzzleId)}`)
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => { if (!cancelled && d) setPuzzleStats(d) })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [puzzleId])
 
   const handleInspectorAnchor = useCallback(
     () => (inspected ? umapRef.current?.getScreenPos(inspected) ?? null : null),
@@ -192,7 +207,7 @@ export function GameContainer() {
         onJumpToPoint={handleJumpToPoint}
       />
 
-      <GameControls onProbeResults={handleProbeResults} />
+      <GameControls onProbeResults={handleProbeResults} stats={puzzleStats} />
 
       {inspected && (
         <NeuronInspector
@@ -215,8 +230,8 @@ export function GameContainer() {
             <div className="w-80 2xl:w-96 max-w-[calc(100vw-2rem)] max-h-full overflow-y-auto pointer-events-auto">
               <ScoreReveal
                 score={currentRound.score!}
-                distance={currentRound.distance!}
                 groundTruth={currentRound.puzzle.groundTruthLabel}
+                stats={puzzleStats}
                 onContinue={nextRound}
               />
             </div>
