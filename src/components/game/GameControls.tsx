@@ -108,6 +108,7 @@ export function GameControls({ onProbeResults, stats }: GameControlsProps) {
             totalHints={totalHints}
             onRevealHint={revealHint}
             hintsRevealed={hintsRevealed}
+            puzzleId={puzzle.id}
           />
         </div>
 

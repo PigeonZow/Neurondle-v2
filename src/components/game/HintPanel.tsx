@@ -1,17 +1,80 @@
 'use client'
 
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { TokenWithTooltip } from '@/components/ui/TokenWithTooltip'
 import type { Hint } from '@/types'
+
+// Tokens of context shown on each side of the strongest token when collapsed
+const CONTEXT_TOKENS = 10
 
 interface HintPanelProps {
   hints: Hint[]
   totalHints: number
   hintsRevealed: number
+  puzzleId: string
   onRevealHint: () => void
 }
 
-export function HintPanel({ hints, totalHints, hintsRevealed, onRevealHint }: HintPanelProps) {
+// Neuronpedia-style snippet: focus on the window around the max-activating
+// token by default; click to reveal the full text.
+function HintCard({ hint }: { hint: Hint }) {
+  const [expanded, setExpanded] = useState(false)
+
+  const maxAct = Math.max(...hint.tokens.map(tk => tk.activation), 0.01)
+  const maxIdx = hint.tokens.reduce(
+    (best, t, i) => (t.activation > hint.tokens[best].activation ? i : best),
+    0
+  )
+
+  const start = Math.max(0, maxIdx - CONTEXT_TOKENS)
+  const end = Math.min(hint.tokens.length, maxIdx + CONTEXT_TOKENS + 1)
+  // Not worth a collapse affordance when the window nearly covers the text
+  const collapsible = hint.tokens.length > end - start + 6
+  const showAll = expanded || !collapsible
+  const visible = showAll ? hint.tokens : hint.tokens.slice(start, end)
+
+  return (
+    <>
+      <div className="flex items-center justify-between mb-1">
+        <span className="font-mono text-xs 2xl:text-sm text-starlight/50">Hint {hint.level}</span>
+        <span className="text-xs 2xl:text-sm font-mono text-starlight/60">
+          {hint.score.toFixed(1)}
+        </span>
+      </div>
+      <div
+        className={collapsible ? 'cursor-pointer' : undefined}
+        onClick={collapsible ? () => setExpanded(e => !e) : undefined}
+      >
+        {/* items-center keeps the ellipses from stretching the row height —
+            stretched flex items would fatten the token highlights */}
+        <div className="flex flex-wrap items-center gap-0.5">
+          {!showAll && start > 0 && (
+            <span className="text-xs 2xl:text-sm leading-none text-starlight/35 px-0.5" aria-hidden>&hellip;</span>
+          )}
+          {visible.map((t, i) => (
+            <TokenWithTooltip
+              key={i}
+              token={t.token}
+              activation={t.activation}
+              maxActivation={maxAct}
+            />
+          ))}
+          {!showAll && end < hint.tokens.length && (
+            <span className="text-xs 2xl:text-sm leading-none text-starlight/35 px-0.5" aria-hidden>&hellip;</span>
+          )}
+        </div>
+        {collapsible && (
+          <p className="mt-1 text-[10px] 2xl:text-xs text-starlight/40">
+            {expanded ? 'show highlight only' : 'show full text'}
+          </p>
+        )}
+      </div>
+    </>
+  )
+}
+
+export function HintPanel({ hints, totalHints, hintsRevealed, puzzleId, onRevealHint }: HintPanelProps) {
   const canRevealMore = hintsRevealed < totalHints
 
   return (
@@ -39,32 +102,16 @@ export function HintPanel({ hints, totalHints, hintsRevealed, onRevealHint }: Hi
         <AnimatePresence initial={false}>
           {[...hints].reverse().map((hint) => (
             <motion.div
-              key={hint.id}
+              // Hint ids repeat across puzzles ("hint_1"...), so scope the key
+              // to the puzzle or expansion state would leak between rounds
+              key={`${puzzleId}:${hint.id}`}
               layout
               initial={{ opacity: 0, y: -16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ type: 'spring', stiffness: 320, damping: 30 }}
               className="bg-ink/50 border border-graticule/25 rounded p-2"
             >
-              <div className="flex items-center justify-between mb-1">
-                <span className="font-mono text-xs 2xl:text-sm text-starlight/50">Hint {hint.level}</span>
-                <span className="text-xs 2xl:text-sm font-mono text-starlight/60">
-                  {hint.score.toFixed(1)}
-                </span>
-              </div>
-              <div className="flex flex-wrap gap-0.5">
-                {hint.tokens.map((t, i) => {
-                  const maxAct = Math.max(...hint.tokens.map(tk => tk.activation), 0.01)
-                  return (
-                    <TokenWithTooltip
-                      key={i}
-                      token={t.token}
-                      activation={t.activation}
-                      maxActivation={maxAct}
-                    />
-                  )
-                })}
-              </div>
+              <HintCard hint={hint} />
             </motion.div>
           ))}
         </AnimatePresence>
