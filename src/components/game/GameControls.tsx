@@ -17,7 +17,6 @@ interface GameControlsProps {
 export function GameControls({ onProbeResults, stats }: GameControlsProps) {
   const currentRound = useGameStore(selectCurrentRound)
   const revealedHints = useGameStore(selectRevealedHints)
-  const lockIn = useGameStore(state => state.lockIn)
   const revealHint = useGameStore(state => state.revealHint)
   const currentRoundIndex = useGameStore(state => state.currentRound)
   const totalScore = useGameStore(state => state.totalScore)
@@ -26,8 +25,7 @@ export function GameControls({ onProbeResults, stats }: GameControlsProps) {
 
   if (!currentRound) return null
 
-  const { phase, pin, puzzle, hintsRevealed } = currentRound
-  const canLockIn = pin && !currentRound.confirmed
+  const { phase, puzzle, hintsRevealed } = currentRound
   const totalHints = puzzle.hints.length
   const totalRounds = rounds.length || 3
 
@@ -123,24 +121,11 @@ export function GameControls({ onProbeResults, stats }: GameControlsProps) {
               <Info className="w-3 h-3 2xl:w-3.5 2xl:h-3.5" />
             </button>
           </p>
+          <p className="text-xs 2xl:text-sm text-starlight/55 leading-snug">
+            Type anything to see how strongly the mystery neuron reacts.
+          </p>
           <TestInput onProbeResults={onProbeResults} />
         </div>
-      </div>
-
-      {/* Lock-in button — pinned footer */}
-      <div className="shrink-0 px-5 2xl:px-6 py-4 2xl:py-5 border-t border-graticule/25">
-        <button
-          data-onboarding="lock-in-button"
-          onClick={lockIn}
-          disabled={!canLockIn}
-          className={`w-full py-2.5 2xl:py-3.5 rounded text-sm 2xl:text-lg font-bold tracking-wide transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60
-            ${canLockIn
-              ? 'bg-alert hover:bg-alert/90 text-starlight'
-              : 'border border-graticule/50 text-starlight/30 cursor-not-allowed'
-            }`}
-        >
-          Lock In Answer
-        </button>
       </div>
     </aside>
     </div>

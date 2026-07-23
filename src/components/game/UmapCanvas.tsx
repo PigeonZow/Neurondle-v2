@@ -5,6 +5,8 @@ import { useGameStore } from '@/lib/store/gameStore'
 import { useConsentStore } from '@/lib/store/consentStore'
 import { useOnboardingStore } from '@/lib/store/onboardingStore'
 import { mapColors as pal } from '@/lib/theme'
+import { calculateScore, getScoreMessage } from '@/lib/services/scoring' // score-band debug rings (?debug=bands)
+import { scoreBandsDebugEnabled } from '@/lib/debug'
 import type { UmapPoint } from '@/types'
 
 interface UmapCanvasProps {
@@ -36,7 +38,7 @@ interface TooltipState {
 // Screen-px radius shared by the hover ring, tooltip lookup, and pin snap.
 // Keeping them identical means the ring telegraphs exactly what a click
 // will snap to; anything outside it places the pin freely.
-const HOVER_RADIUS_PX = 20
+const HOVER_RADIUS_PX = 10
 
 // Round a raw interval to the nearest 1/2/5 step (map grid + scale bar)
 function niceStep(raw: number): number {
@@ -422,6 +424,8 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
       let pinSprite: any = null
       let answerSprite: any = null
       let answerLine: any = null
+      // Dev-only (?debug=bands): score-band rings around the answer
+      let bandRings: any = null
       // Persistent ring highlighting the most recently searched feature dot
       let searchHighlightSprite: any = null
 
@@ -643,6 +647,46 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
           answerSprite.scale.set(1 / currentZoom)
           overlayContainer.addChild(answerSprite)
 
+          // Dev-only (?debug=bands): score-band rings in true map units
+          // around the answer, boundaries derived live from scoring.ts.
+          if (bandRings) {
+            overlayContainer.removeChild(bandRings)
+            bandRings.destroy()
+            bandRings = null
+          }
+          if (scoreBandsDebugEnabled()) {
+            bandRings = new PIXI.Graphics()
+            const RING_COLORS: Record<string, number> = {
+              'Direct hit': pal.verdant,
+              'Near miss': pal.beacon,
+              'Close': pal.star,
+              'Similar region': pal.ember,
+              'Far off': pal.alert,
+              'Way off': pal.graticule,
+            }
+            const bounds: { d: number; message: string }[] = []
+            let prevMsg = getScoreMessage(calculateScore(0)).message
+            for (let d = 0.005; d <= 8; d += 0.005) {
+              const m = getScoreMessage(calculateScore(d)).message
+              if (m !== prevMsg) {
+                bounds.push({ d, message: prevMsg })
+                prevMsg = m
+              }
+            }
+            // Filled discs from outermost band inward so inner bands sit on top
+            for (let i = bounds.length - 1; i >= 0; i--) {
+              const r = bounds[i].d * scale
+              const ringColor = RING_COLORS[bounds[i].message] ?? pal.starlight
+              bandRings.circle(0, 0, r)
+              bandRings.fill({ color: ringColor, alpha: 0.05 })
+              bandRings.circle(0, 0, r)
+              bandRings.stroke({ color: ringColor, width: 1, alpha: 0.55 })
+            }
+            bandRings.x = ansSx
+            bandRings.y = ansSy
+            overlayContainer.addChild(bandRings)
+          }
+
           if (pinSprite) pinSprite.scale.set(1 / currentZoom)
         },
         clearPinAndLine: () => {
@@ -660,6 +704,11 @@ export const UmapCanvas = forwardRef<UmapCanvasRef, UmapCanvasProps>(function Um
             overlayContainer.removeChild(answerLine)
             answerLine.destroy()
             answerLine = null
+          }
+          if (bandRings) {
+            overlayContainer.removeChild(bandRings)
+            bandRings.destroy()
+            bandRings = null
           }
           if (searchHighlightSprite) {
             overlayContainer.removeChild(searchHighlightSprite)

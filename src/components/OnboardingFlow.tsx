@@ -26,18 +26,18 @@ const STEPS = [
   },
   {
     selector: '[data-onboarding="activation-input"]',
-    title: 'Probe',
-    body: 'Type any text to see how strongly the mystery neuron activates on it. The map also glows where that text lands.',
+    title: 'Probing with custom text',
+    body: 'Type any text to see how strongly the mystery neuron activates on it.',
   },
   {
     selector: '[data-onboarding="feature-search"]',
-    title: 'Search the map and place a pin',
+    title: 'Search the map',
     body: 'Search the map for concepts. Click a dot to pin and inspect that neuron, or click empty space to drop your pin anywhere.',
   },
   {
     selector: '[data-onboarding="lock-in-button"]',
     title: 'Lock in',
-    body: 'When you\'re ready to guess, click here. Closer pins earn higher scores.',
+    body: 'Click anywhere on the map to drop your pin. When you\'re ready to guess, lock it in here. Closer pins earn higher scores.',
   },
 ]
 

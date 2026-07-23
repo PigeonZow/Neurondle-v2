@@ -9,8 +9,8 @@ import { formatScore, getScoreMessage } from '@/lib/services/scoring'
 import type { LabelVerdict, PuzzleStats } from '@/types'
 
 const VERDICT_OPTIONS: { value: LabelVerdict; label: string }[] = [
-  { value: 'fits', label: 'Fits' },
-  { value: 'off', label: 'Off' },
+  { value: 'fits', label: 'Yes' },
+  { value: 'off', label: 'No' },
   { value: 'unsure', label: "Can't tell" },
 ]
 

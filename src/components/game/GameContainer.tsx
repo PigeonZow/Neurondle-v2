@@ -7,6 +7,8 @@ import { UmapCanvas, UmapCanvasRef } from './UmapCanvas'
 import { NeuronInspector } from './NeuronInspector'
 import { GameHeader } from './GameHeader'
 import { GameControls } from './GameControls'
+import { LockInBar } from './LockInBar'
+import { ScoreBandsDebug } from './ScoreBandsDebug' // dev-only, shows with ?debug=bands
 import { ResultsOverlay } from './ResultsOverlay'
 import { ScoreReveal } from './ScoreReveal'
 import { ConsentModal } from '@/components/ConsentModal'
@@ -208,6 +210,8 @@ export function GameContainer() {
       />
 
       <GameControls onProbeResults={handleProbeResults} stats={puzzleStats} />
+      <LockInBar />
+      <ScoreBandsDebug /> {/* dev-only, shows with ?debug=bands */}
 
       {inspected && (
         <NeuronInspector

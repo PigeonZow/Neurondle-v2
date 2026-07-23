@@ -107,7 +107,7 @@ export function TestInput({ onProbeResults }: TestInputProps) {
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleTest()}
-          placeholder="Test custom activation..."
+          placeholder="Your custom text..."
           className="flex-1 bg-ink/50 border border-graticule/40 hover:border-graticule/60 rounded px-3 py-1.5 2xl:py-2 text-sm 2xl:text-base text-starlight placeholder-starlight/35 focus:outline-none focus:border-accent/60 focus:bg-ink/70 focus-visible:ring-2 focus-visible:ring-accent/25 transition-colors"
         />
         <button
